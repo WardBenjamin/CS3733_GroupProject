@@ -1,0 +1,14 @@
+html, body {
+    min-height: 100vh;
+}
+
+.vertical-center {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.anchor-right {
+    position: absolute;
+    right: 0;
+}

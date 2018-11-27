@@ -1,0 +1,9 @@
+{
+    "id": 1,
+    "time_slots": [],
+    "organizer": "MySecretCodeHere",
+    "start_date": "YYYY-MM-DD",
+    "end_date": "YYYY-MM-DD",
+    "start_time": "HH:MM:SS",
+    "end_time": "HH:MM:SS"
+}

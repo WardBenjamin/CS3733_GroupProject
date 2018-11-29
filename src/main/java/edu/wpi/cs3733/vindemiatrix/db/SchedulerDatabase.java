@@ -20,7 +20,7 @@ public class SchedulerDatabase {
 	/**
 	 *	Static connection function that allows for a single shared connection across usages.
 	 */
-	protected static Connection connect() throws Exception {
+	public static Connection connect() throws Exception {
 		if (conn != null) { return conn; }
 		
 		try {

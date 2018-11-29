@@ -3,10 +3,11 @@ package edu.wpi.cs3733.vindemiatrix.db.dao;
 import java.sql.*; 
 //import java.text.DecimalFormat;
 import java.util.ArrayList; 
-import java.util.Calengar; 
+import java.util.Calendar; 
 import java.util.List;
 
-import edu.wpi.cs.heineman.model.Constant;
+import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
+import edu.wpi.cs3733.vindemiatrix.model.Meeting;
 
 import java.util.GregorianCalendar; 
 
@@ -15,21 +16,22 @@ public class MeetingDAO {
 	
 	public MeetingDAO() {
 		try {
-			conn = SchedulerDatabase.java; 
-		}catch (Exceptione) {
+			conn = SchedulerDatabase.connect(); 
+		} catch (Exception e) {
 			conn = null;
 		}
 	}
+	
 	/*
 	 * creates a meeting
 	 * @param timeSlotID the time slot to create the meeting within
 	 * @param usrName user that is making the meeting
 	 */
-	public Boolean createMeeting(int timeSlotId, String usrName) throws Exception{
+	public Boolean createMeeting(int timeSlotId, String usrName) throws Exception {
 		try {
 			Meeting m = null; 
-			PreparedStatement ps = conn.prepareStatement("SELECT * FROM Meetings WHERE name = ?;");
-			ps.setString(1, timeSlotId);
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `meetings` WHERE name = ?;");
+			ps.setNString(1, timeSlotId);
 			ResultSet resultSet ps.executeQuery(); 
 			ps = conn.prepareStatement("INSERT INTO Meetings (timSlotId, usrName) values(?,?);");
 			ps.setInt(1, timeSlotId);
@@ -42,7 +44,7 @@ public class MeetingDAO {
 				throw new Exception("Constant not found");
 			} 
 		}
-		catch {
+		catch (Exception e) {
 			throw new Exception("Failed to insert schedule: " + e.getMessage());
 		}
 	}
@@ -52,7 +54,7 @@ public class MeetingDAO {
 	 * @param secretCode secret code for the meeting
 	 * @param id meeting id 
 	 */
-	public boolean deleteMeeting(String secretCode, Int id) throws Exception{
+	public boolean deleteMeeting(String secretCode, int id) throws Exception{
 		try {
 			PreparedStatement ps = conn.prepareStatement("DELETE FROM Meetings (secretCode, id) values(?,?);");
 			ps.setString(1, secretCode);
@@ -65,7 +67,7 @@ public class MeetingDAO {
 		}
 	}
 	private Meeting generateMeeting(ResultSet resultSet) throws Exception {
-		Int timeSlotId  = resultSet.getInt("timeSlotId");
+		int timeSlotId  = resultSet.getInt("timeSlotId");
 		String usrName = resultSet.getString("usrName");
 		return new Meeting (timeSlotId, usrName);
 	}

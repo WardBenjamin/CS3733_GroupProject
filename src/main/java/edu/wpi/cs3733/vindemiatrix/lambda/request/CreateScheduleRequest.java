@@ -28,6 +28,6 @@ public class CreateScheduleRequest {
 	
 	public String toString() {
 		return "CreateSchedule(" + start_date + "," + end_date + "," + 
-								start_time + "," + end_time + "," + ")";
+								start_time + "," + end_time + ")";
 	}
 }

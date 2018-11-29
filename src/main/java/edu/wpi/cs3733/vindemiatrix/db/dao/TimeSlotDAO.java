@@ -7,13 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.wpi.cs.heineman.model.Constant;
+import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
+import edu.wpi.cs3733.vindemiatrix.model.TimeSlot;
 
 public class TimeSlotDAO {
 	java.sql.Connection conn; 
 	
-	pubic TimeSlotDAO{
-		ty{
-			conn = SchedulerDataBase.connect();
+	public TimeSlotDAO() {
+		try {
+			conn = SchedulerDatabase.connect();
 		} catch (Exception e) {
 			conn = null; 
 		}
@@ -23,7 +25,7 @@ public class TimeSlotDAO {
 	 * search for available time slots
 	 * within the input search range 
 	 * @param id schedule id  
-	 * @param startDate ealiest date of time slots to look for 
+	 * @param startDate earliest date of time slots to look for 
 	 * @param endDate latest date of time slot to look for 
 	 * @param startTime earliest time of time slots to look for
 	 * @param endTime latest time of time slots to look for 

@@ -165,9 +165,9 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			int date[] = new int[3];
 			
 			if (a == 0) {
-				date_str = request.start_date.split("-");
+				date_str = request.start_date.split("/");
 			} else {
-				date_str = request.end_date.split("-");
+				date_str = request.end_date.split("/");
 			}
 			
 			try {

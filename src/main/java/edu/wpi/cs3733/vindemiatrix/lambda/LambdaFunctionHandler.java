@@ -1,4 +1,4 @@
-package edu.wpi.cs3733.vindemiatrix.demo;
+package edu.wpi.cs3733.vindemiatrix.lambda;
 
 import java.io.IOException;
 import java.io.InputStream;

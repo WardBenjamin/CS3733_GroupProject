@@ -22,9 +22,11 @@ import com.google.gson.Gson;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
 import edu.wpi.cs3733.vindemiatrix.db.dao.ScheduleDAO;
+import edu.wpi.cs3733.vindemiatrix.db.dao.TimeSlotDAO;
 import edu.wpi.cs3733.vindemiatrix.lambda.request.CreateScheduleRequest;
 import edu.wpi.cs3733.vindemiatrix.lambda.response.CreateScheduleResponse;
 import edu.wpi.cs3733.vindemiatrix.model.Schedule;
+import edu.wpi.cs3733.vindemiatrix.model.TimeSlot;
 
 public class CreateScheduleHandler implements RequestStreamHandler {
 
@@ -91,13 +93,14 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 			SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+			SimpleDateFormat fullFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 			java.util.Date date1 = null;
 			java.util.Date date2 = null;
 			java.util.Date time1 = null;
 			java.util.Date time2 = null;
 			
 			int days = 0;
-			int numSlots = 0;
+			int timeSlotsPerDay = 0;
 			
 			if (success) {
 				try {
@@ -120,10 +123,10 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				long seconds = timeDifference / 1000;
 				long minutes = seconds / 60;
 				
-				numSlots = (int) minutes / request.meeting_duration;
+				timeSlotsPerDay = (int) minutes / request.meeting_duration;
 				
 				long dateDifference = date2.getTime() - date1.getTime();
-				// ms -> sec -> min -> hr -> day
+				// ms -> sec -> min -> hr -> day)
 				days = (int) (dateDifference / 1000 / 60 / 60 / 24);		
 				
 				logger.log("Determined start and end dates and times, creating schedule...\n");
@@ -132,8 +135,39 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				Schedule s = createSchedule(request.start_date, request.end_date, 
 						request.start_time + ":00", request.end_time + ":00", request.meeting_duration);
 				if (s != null) {
-					responseObj = new CreateScheduleResponse(s.organizer, 200);
-			        response.put("body", new Gson().toJson(responseObj));
+					logger.log("Created schedule. Now creating time slots...\n");
+					TimeSlot[] time_slots = new TimeSlot[(int) (days * timeSlotsPerDay)];
+					TimeSlotDAO ts_dao = new TimeSlotDAO();
+					Calendar c = Calendar.getInstance();
+					
+					try {
+						c.setTime(fullFormat.parse(request.start_date + " " + request.start_time));
+						int k = 0;
+						for (int i = 0; i < days; i++) {
+							if (c.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY &&
+								c.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+								for(int j = 0; j < timeSlotsPerDay; j++) {
+									String date = dateFormat.format(c.getTime());
+									String start_time = timeFormat.format(c.getTime()) + ":00";
+									c.add(Calendar.MINUTE, request.meeting_duration);
+									String end_time = timeFormat.format(c.getTime()) + ":00";
+									
+									time_slots[k++] = ts_dao.createTimeSlot(s.id, date, start_time, end_time);
+								}
+							}
+							
+							c.add(Calendar.MINUTE, -1 * timeSlotsPerDay * request.meeting_duration);
+							c.add(Calendar.DAY_OF_MONTH, 1);
+						}
+						
+						responseObj = new CreateScheduleResponse(s.organizer, request, days, timeSlotsPerDay, 200);
+				        response.put("body", new Gson().toJson(responseObj));
+					} catch (Exception e) {
+						logger.log("Failed to create time slots.\n");
+						e.printStackTrace();
+						responseObj = new CreateScheduleResponse(500);
+				        response.put("body", new Gson().toJson(responseObj));
+					}
 				} else {
 					responseObj = new CreateScheduleResponse(500);
 			        response.put("body", new Gson().toJson(responseObj));

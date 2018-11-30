@@ -17,16 +17,6 @@
     <link rel="stylesheet" href="css/styles.css">
 
     <script type='text/javascript' src='js/view_schedule.js'></script>
-    <script>
-        function loadPage() {
-            if (sessionStorage.getItem("schedule") == null) {
-                console.log("No schedule in session storage");
-                return;
-            }
-            let schedule = JSON.parse(sessionStorage.schedule);
-            console.log(schedule);
-        }
-    </script>
 </head>
 
 <body onload="loadPage();">
@@ -46,7 +36,7 @@
         </div>
     </div>
     <div>
-        <div class="Rtable Rtable--6cols">
+        <div class="Rtable Rtable--6cols" id="schedule_table" name="scheduleTable">
 
             <div style="order:1;" class="Rtable-cell"></div>
             <div style="order:2;" class="Rtable-cell">9:00 AM</div>

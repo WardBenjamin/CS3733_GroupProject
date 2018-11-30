@@ -8,10 +8,11 @@ import java.util.Iterator;
 public class Schedule {
 	public final int id;
 	public final String organizer;
-	public final Date startDate;
-	public final Date endDate;
-	public final Time startTime;
-	public final Time endTime;
+	public final String startDate;
+	public final String endDate;
+	public final String startTime;
+	public final String endTime;
+	public final int meetingDuration;
 	
 	ArrayList<TimeSlot> timeSlots;
 	
@@ -24,14 +25,15 @@ public class Schedule {
 	 * @param startTime The start time of the schedule
 	 * @param endTime The end time of the schedule
 	 */
-	public Schedule(int id, String organizer, Date startDate, Date endDate, 
-			Time startTime, Time endTime) {
+	public Schedule(int id, String organizer, String startDate, String endDate, 
+			String startTime, String endTime, int meetingDuration) {
 		this.id = id;
 		this.organizer = organizer;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.startTime = startTime;
 		this.endTime = endTime;
+		this.meetingDuration = meetingDuration;
 	}
 	
 	/**
@@ -43,7 +45,7 @@ public class Schedule {
 	 * @param isOpen If the slot is open
 	 * @param meetingID The meeting ID for the slot or 0 if not set
 	 */
-	public void appendTimeSlot(int id, Date date, Time startTime, Time endTime, boolean isOpen, int meetingID) {
+	public void appendTimeSlot(int id, String date, String startTime, String endTime, boolean isOpen, int meetingID) {
 		timeSlots.add(new TimeSlot(id, date, startTime, endTime, isOpen, meetingID));
 	}
 	

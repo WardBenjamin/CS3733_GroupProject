@@ -52,29 +52,43 @@ public class ScheduleDAO {
 	 * @param end_time schedule end time 
 	 * @return The schedule or null on failure
 	 */
-	public Schedule createSchedule(Date start_date, Date end_date, Time start_time, Time end_time) throws Exception{
+	public Schedule createSchedule(String start_date, String end_date, String start_time, 
+			String end_time, int meeting_duration) throws Exception{
 		Schedule s = null;
 		
 		try {
-			PreparedStatement ps = conn.prepareStatement("INSERT INTO `schedules` (`start_date`, `end_date`, `start_time`, `end_time`, `organizer`) VALUES (?,?,?,?,?);");
+			PreparedStatement ps = conn.prepareStatement(
+					"INSERT INTO `schedules` (`start_date`, `end_date`, "
+					+ "`start_time`, `end_time`, `organizer`, `meeting_duration`) "
+					+ "VALUES (?,?,?,?,?,?);");
 			
-			ps.setDate(1, start_date);
-			ps.setDate(2, end_date);
-			ps.setTime(3, start_time);
-			ps.setTime(4, end_time);
+			ps.setString(1, start_date);
+			ps.setString(2, end_date);
+			ps.setString(3, start_time);
+			ps.setString(4, end_time);
+			ps.setInt(6, meeting_duration);
 			
 			UUID uuid = UUID.randomUUID();
 			
 			ps.setString(5, uuid.toString());
+			ps.execute();
 			
+			ps = conn.prepareStatement("SELECT `id` FROM `schedules` WHERE `organizer` = ?");
+			ps.setString(1, uuid.toString());
+
 			if (ps.execute()) {
-				ps = conn.prepareStatement("SELECT `id` FROM `schedule` WHERE `organizer` = ?");
-				ps.setString(1, uuid.toString());
-				
-				if (ps.execute()) {
-					ResultSet rs = ps.getResultSet();
-					s = new Schedule(rs.getInt(1), uuid.toString(), start_date, end_date, start_time, end_time);	
+				System.out.println("executed select statement");
+				ResultSet rs = ps.getResultSet();
+				System.out.println("got result set");
+				int id = 0;
+				if (rs.first()) {
+					id = rs.getInt(1);
 				}
+				
+				System.out.println("got id of " + id);
+				
+				s = new Schedule(id, uuid.toString(), start_date, end_date, start_time, end_time, meeting_duration);
+				System.out.println("created schedule");
 			}
 
 			ps.close();

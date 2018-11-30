@@ -5,9 +5,9 @@ import java.sql.Time;
 
 public class TimeSlot {
 	public final int id;
-	public final Date date;
-	public final Time startTime;
-	public final Time endTime;
+	public final String date;
+	public final String startTime;
+	public final String endTime;
 	public final boolean isOpen;
 	public final int meetingID;
 	
@@ -20,7 +20,7 @@ public class TimeSlot {
 	 * @param isOpen If the time slot is open
 	 * @param meetingID The meeting ID for a meeting in this time slot, or 0 if no meeting
 	 */
-	public TimeSlot(int id, Date date, Time startTime, Time endTime, 
+	public TimeSlot(int id, String date, String startTime, String endTime, 
 			boolean isOpen, int meetingID) {
 		this.id = id;
 		this.date = date;

@@ -24,13 +24,11 @@ public class SchedulerDatabase {
 		if (conn != null) { return conn; }
 		
 		try {
-			// System.out.println("Initiating connection...");
 			Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://" + 
 					db_uri + ":" + db_port + "/" + db_name + "?allowMultiQueries=true",
 					db_uname,
 					db_password);
-			// System.out.println("Successful connection to database.");
 			return conn;
 		} catch (Exception ex) {
 			throw new Exception("Failed to connect to database.");

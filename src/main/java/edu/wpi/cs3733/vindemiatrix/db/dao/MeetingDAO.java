@@ -12,7 +12,7 @@ import edu.wpi.cs3733.vindemiatrix.model.Meeting;
 import java.util.GregorianCalendar; 
 
 public class MeetingDAO {
-	java.sql.Connection conn; 
+	Connection conn; 
 	
 	public MeetingDAO() {
 		try {

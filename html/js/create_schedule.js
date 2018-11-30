@@ -7,16 +7,24 @@ function processCreateResponse(result) {
     var js = JSON.parse(result);
 
     var httpResult = js["response"];
-    var scheduleId = js["id"];
 
-    // TODO: If result is good, show a green alert
+    console.log("Processing response: " + httpResult);
 
-    let url = location.href;
-    var to = url.lastIndexOf('/');
-    to = to === -1 ? url.length : to + 1;
-    url = url.substring(0, to);
+    if (parseInt(httpResult) === 200) {
+        // TODO: If result is good, show a green alert
 
-    setTimeout("location.href = url + 'schedule_view.html?id=' + scheduleId;", 5000);
+        sessionStorage.schedule = result;
+
+        let url = location.href;
+        var to = url.lastIndexOf('/');
+        to = to === -1 ? url.length : to + 1;
+        url = url.substring(0, to);
+
+        setTimeout("location.href = url + 'schedule_view.html';", 5000);
+    } else {
+        // TODO: show red alert
+        sessionStorage.schedule = null;
+    }
 }
 
 function handleCreateClick(e) {
@@ -27,32 +35,40 @@ function handleCreateClick(e) {
     var endDate = form.endDate.value;
     var startTime = form.startTime.value;
     var endTime = form.endTime.value;
+    var meetingDuration = form.meetingDuration.value;
+
+    console.log("Start date: " + startDate);
 
     if (!validateDate(startDate)) {
-        // Alert that start date is invalid
-        return;
+        // TODO: Alert that start date is invalid
+        console.log("Couldn't validate start date");
+        return false;
     }
 
     if (!validateDate(endDate)) {
-        // Alert that end date is invalid
-        return;
+        // TODO: Alert that end date is invalid
+        console.log("Couldn't validate end date");
+        return false;
     }
 
     if (!validateTime(startTime)) {
-        // Alert that start time is invalid
-        return;
+        // TODO: Alert that start time is invalid
+        console.log("Couldn't validate start time");
+        return false;
     }
 
     if (!validateTime(endTime)) {
-        // Alert that end time is invalid
-        return;
+        // TODO: Alert that end time is invalid
+        console.log("Couldn't validate end time");
+        return false;
     }
 
     var data = {};
-    data["startDate"] = startDate;
-    data["endDate"] = endDate;
-    data["startTime"] = startTime;
-    data["endTime"] = endTime;
+    data["start_date"] = startDate;
+    data["end_date"] = endDate;
+    data["start_time"] = time12hTo24h(startTime);
+    data["end_time"] = time12hTo24h(endTime);
+    data["meeting_duration"] = meetingDuration;
 
     var js = JSON.stringify(data);
     console.log("JS:" + js);

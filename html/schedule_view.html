@@ -15,11 +15,21 @@
 
     <link rel="stylesheet" href="css/calendar.css">
     <link rel="stylesheet" href="css/styles.css">
+
+    <script type='text/javascript' src='js/view_schedule.js'></script>
+    <script>
+        function loadPage() {
+            if (sessionStorage.getItem("schedule") == null) {
+                console.log("No schedule in session storage");
+                return;
+            }
+            let schedule = JSON.parse(sessionStorage.schedule);
+            console.log(schedule);
+        }
+    </script>
 </head>
 
-<body>
-
-
+<body onload="loadPage();">
 <div class="container-fluid" style="padding-top: 15px;">
     <div class="page-header">
         <h1 style="position: relative;">

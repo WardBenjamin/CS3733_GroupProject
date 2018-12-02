@@ -1,8 +1,5 @@
 package edu.wpi.cs3733.vindemiatrix.model;
 
-import java.sql.Date;
-import java.sql.Time;
-
 public class TimeSlot {
 	public final int id;
 	public final String date;

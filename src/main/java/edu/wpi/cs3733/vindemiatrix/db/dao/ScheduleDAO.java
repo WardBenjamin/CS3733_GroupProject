@@ -20,21 +20,23 @@ public class ScheduleDAO {
 	}
 	
 	/*
-	 * gets a schedule and all associated time slots and meetings
+	 * Gets a schedule and all associated time slots within the week
 	 * @param id id of schedule to retrieve 
+	 * @param start_date Start day of week for the weekly schedule to get
 	 */
-	public Schedule getSchedule(int id) throws Exception {
+	public Schedule getSchedule(int id, String start_date) throws Exception {
 		try {
 			Schedule s = null;
-			// FIXME invalid query
-			PreparedStatement ps = conn.prepareStatement("SELECT * FROM Schedules WHERE id=?;");
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id=?;");
 			ps.setInt(1, id);
-			ResultSet rSet = ps.executeQuery();
+			ResultSet result = ps.executeQuery();
 			
-			while (rSet.next()) {
-				// s = generateSchedule(rSet); FIXME: NOT DEFINED
+			if (result.next()) {
+				s = new Schedule(id, result.getString(2), result.getString(3), 
+						result.getString(4), result.getString(5), result.getString(6), result.getInt(7));
 			}
-			rSet.close();
+			
+			result.close();
 			ps.close();
 			return s; 
 		} catch (Exception e) {

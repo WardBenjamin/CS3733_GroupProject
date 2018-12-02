@@ -6,16 +6,16 @@ public class GetScheduleRequest {
 
 	/**
 	 * Get a request data object with the start/end dates and start/end times. 
+	 * @param organizer Organizer code
 	 * @param week_start_date Week Start Date
-	 * @param id Schedule ID
 	 */
-	public GetScheduleRequest( int id, String week_start_date) {
+	public GetScheduleRequest(int id, String week_start_date) {
 		this.id = id;
 		this.week_start_date = week_start_date;
 	}
 	
 	public boolean isMissingFields() {
-		return (week_start_date == null) || (id == 0);
+		return (id == 0) || (week_start_date == null);
 	}
 	
 	public String toString() {

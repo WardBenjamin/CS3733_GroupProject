@@ -44,7 +44,7 @@ public class Schedule {
 	 * @param meetingID The meeting ID for the slot or 0 if not set
 	 */
 	public void appendTimeSlot(int id, String date, String startTime, String endTime, boolean isOpen, int meetingID) {
-		timeSlots.add(new TimeSlot(id, date, startTime, endTime, isOpen, meetingID));
+		timeSlots.add(new TimeSlot(id, date, startTime, endTime, isOpen, null));
 	}
 	
 	/**

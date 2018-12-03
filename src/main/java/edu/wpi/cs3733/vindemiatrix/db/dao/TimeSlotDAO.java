@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
+import edu.wpi.cs3733.vindemiatrix.model.Meeting;
 import edu.wpi.cs3733.vindemiatrix.model.Schedule;
 import edu.wpi.cs3733.vindemiatrix.model.TimeSlot;
 
@@ -20,6 +21,41 @@ public class TimeSlotDAO {
 		} catch (Exception e) {
 			conn = null; 
 		}
+	}
+	
+	public List<TimeSlot> getTimeSlots(int id, String start_of_week, String end_of_week) throws Exception {
+		List<TimeSlot> timeSlots = new ArrayList<>();
+		
+		try {
+			PreparedStatement ps = conn.prepareStatement(
+					"SELECT * FROM `time_slots` WHERE `schedule_id` = ? AND `date` BETWEEN ? AND ?;");
+				
+			ps.setInt(1, id);
+			ps.setString(2, start_of_week);
+			ps.setString(3, end_of_week);
+			
+			ResultSet rs = ps.executeQuery();
+			
+			while (rs.next()) {
+				int mid = 0;
+				Meeting m = null;
+				
+				if ((mid = rs.getInt(6)) != 0) {
+					PreparedStatement meeting_query = conn.prepareStatement("SELECT * FROM `meetings` WHERE `id` = ?");
+					meeting_query.setInt(1, mid);
+					ResultSet meeting_rs = meeting_query.executeQuery();
+					if (meeting_rs.next()) {
+						m = new Meeting(meeting_rs.getInt(1), "");
+					}
+				}
+				
+				timeSlots.add(new TimeSlot(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getBoolean(5), m));
+			}
+		} catch (Exception e) {
+			throw new Exception("Failed to get time slots: " + e.getMessage());
+		}
+		
+		return timeSlots;
 	}
 	
 	/*
@@ -110,7 +146,7 @@ public class TimeSlotDAO {
 					id = rs.getInt(1);
 				}
 				
-				ts = new TimeSlot(id, date, start_time, end_time, true, 0);
+				ts = new TimeSlot(id, date, start_time, end_time, true, null);
 			}
 
 			ps.close();

@@ -32,7 +32,7 @@ public class ScheduleDAO {
 			ResultSet result = ps.executeQuery();
 			
 			if (result.next()) {
-				s = new Schedule(id, result.getString(2), result.getString(3), 
+				s = new Schedule(id, "", result.getString(3), 
 						result.getString(4), result.getString(5), result.getString(6), result.getInt(7));
 			}
 			
@@ -43,7 +43,6 @@ public class ScheduleDAO {
 			e.printStackTrace();
 			throw new Exception("Failed to get schedule: " + e.getMessage()) ; 
 		}
-		
 	}
 	
 	/*
@@ -79,18 +78,14 @@ public class ScheduleDAO {
 			ps.setString(1, uuid.toString());
 
 			if (ps.execute()) {
-				System.out.println("executed select statement");
 				ResultSet rs = ps.getResultSet();
-				System.out.println("got result set");
+
 				int id = 0;
 				if (rs.first()) {
 					id = rs.getInt(1);
 				}
 				
-				System.out.println("got id of " + id);
-				
 				s = new Schedule(id, uuid.toString(), start_date, end_date, start_time, end_time, meeting_duration);
-				System.out.println("created schedule");
 			}
 
 			ps.close();
@@ -116,16 +111,25 @@ public class ScheduleDAO {
 	/*
 	 * deletes a schedule 
 	 * @param secretCode secret code for the schedule 
-	 * @param id schedule id 
-	 * FIXME fix the queries and function
+	 * @param id schedule id
+	 * @return true if correct secret code, false if not, and exception if error
 	 */
 	public boolean deleteSchedule(String secretCode, int id) throws Exception {
 		try {
-			PreparedStatement ps = conn.prepareStatement("DELETE FROM Schedules WHERE id=?;");
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id = ?;");
 			ps.setInt(1, id);
-			int numAffect = ps.executeUpdate(); 
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next() && rs.getString(2).equals(secretCode)) {
+				ps = conn.prepareStatement("DELETE FROM `schedules` WHERE `id` = ?");
+				ps.setInt(1, id);
+				ps.executeUpdate();
+				ps.close();
+				return true;
+			}
+			
 			ps.close();
-			return (numAffect == 1);
+			return false;
 		} catch (Exception e) {
 			throw new Exception("Failed to delete schedule: " + e.getMessage());
 		}

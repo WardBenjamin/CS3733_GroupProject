@@ -6,7 +6,7 @@ public class TimeSlot {
 	public final String startTime;
 	public final String endTime;
 	public final boolean isOpen;
-	public final int meetingID;
+	public final Meeting meeting;
 	
 	/**
 	 * Create a time slot object to represent a time slot in a schedule.
@@ -15,15 +15,15 @@ public class TimeSlot {
 	 * @param startTime The start time of the time slot
 	 * @param endTime The end time of the time slot
 	 * @param isOpen If the time slot is open
-	 * @param meetingID The meeting ID for a meeting in this time slot, or 0 if no meeting
+	 * @param meeting The meeting in this time slot, or NULL if no meeting
 	 */
 	public TimeSlot(int id, String date, String startTime, String endTime, 
-			boolean isOpen, int meetingID) {
+			boolean isOpen, Meeting meeting) {
 		this.id = id;
 		this.date = date;
 		this.startTime = startTime;
 		this.endTime = endTime;
 		this.isOpen = isOpen;
-		this.meetingID = meetingID;
+		this.meeting = meeting;
 	}
 }

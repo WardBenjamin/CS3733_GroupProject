@@ -9,8 +9,8 @@ public class GetScheduleRequest {
 	 * @param organizer Organizer code
 	 * @param week_start_date Week Start Date
 	 */
-	public GetScheduleRequest(int id, String week_start_date) {
-		this.id = id;
+	public GetScheduleRequest(String id, String week_start_date) {
+		this.id = Integer.parseInt(id);
 		this.week_start_date = week_start_date;
 	}
 	

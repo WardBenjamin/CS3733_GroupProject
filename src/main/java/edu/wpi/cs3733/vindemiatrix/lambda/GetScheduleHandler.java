@@ -7,7 +7,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -47,6 +49,9 @@ public class GetScheduleHandler implements RequestStreamHandler {
 		String body = null;
 		boolean handled = false;
 		
+		String _id = null;
+		String _week_start_date = null;
+		
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 			JSONParser parser = new JSONParser();
@@ -60,8 +65,17 @@ public class GetScheduleHandler implements RequestStreamHandler {
 				responseObj = new GetScheduleResponse(200);  
 		        response.put("body", new Gson().toJson(responseObj));
 		        handled = true;
+			} else if (method.equalsIgnoreCase("GET")) {
+				JSONObject params = (JSONObject) event.get("queryStringParameters");
+				_id = (String) params.get("id");
+				_week_start_date = (String) params.get("week_start_date");
 			} else {
 				body = (String) event.get("body");
+				
+				if (body == null) {
+					// FIXME for testing only
+					body = event.toJSONString();
+				}
 			}
 		} catch (ParseException pe) {
 			// unable to process input
@@ -73,7 +87,14 @@ public class GetScheduleHandler implements RequestStreamHandler {
 		
 		if (!handled) {
 			boolean success = true;
-			GetScheduleRequest request = new Gson().fromJson(body, GetScheduleRequest.class);
+			GetScheduleRequest request = null;
+			
+			if (_week_start_date != null) {
+				request = new GetScheduleRequest(_id, _week_start_date);
+			} else {
+				request = new Gson().fromJson(body, GetScheduleRequest.class);
+			}
+			
 			logger.log(request.toString() + "\n");
 			
 			// check inputs
@@ -104,24 +125,36 @@ public class GetScheduleHandler implements RequestStreamHandler {
 				c.setTime(week_start_date);
 				c.add(Calendar.DAY_OF_MONTH, Calendar.MONDAY - c.get(Calendar.DAY_OF_WEEK));
 				String week_start = dateFormat.format(c.getTime());
+				c.add(Calendar.DAY_OF_MONTH, 4);
+				String week_end = dateFormat.format(c.getTime());
 				
 				ScheduleDAO dao = new ScheduleDAO();
-				dao.getSchedule(request.id, week_start);
+				Schedule s = null;
+				try {
+					s = dao.getSchedule(request.id, week_start);
+				} catch (Exception e) {
+					e.printStackTrace();
+					response.put("body", new Gson().toJson(new GetScheduleResponse(500)));
+					success = false;
+				}
+
+				TimeSlotDAO ts_dao = new TimeSlotDAO();
+				List<TimeSlot> time_slots = null;
+				try {
+					time_slots = ts_dao.getTimeSlots(request.id, week_start, week_end);
+				} catch (Exception e) {
+					e.printStackTrace();
+					response.put("body", new Gson().toJson(new GetScheduleResponse(500)));
+					success = false;
+				}
 				
-				// create schedule and generate response
-//				Schedule s = createSchedule(request.start_date, request.end_date, 
-//						request.start_time + ":00", request.end_time + ":00", request.meeting_duration);
-//				if (s != null) {
-//					logger.log("Created schedule. Now creating time slots...\n");
-//					
-//						responseObj = new CreateScheduleResponse(s.organizer, request, days, timeSlotsPerDay, 200);
-//				        response.put("body", new Gson().toJson(responseObj));
-//
-//					
-//				} else {
-//					responseObj = new CreateScheduleResponse(500);
-//			        response.put("body", new Gson().toJson(responseObj));
-//				}
+				if (s != null && time_slots != null) {
+					responseObj = new GetScheduleResponse(s, time_slots, 200);
+			        response.put("body", new Gson().toJson(responseObj));	
+				} else {
+					responseObj = new GetScheduleResponse(500);
+			        response.put("body", new Gson().toJson(responseObj));
+				}
 			}
 		}
 		

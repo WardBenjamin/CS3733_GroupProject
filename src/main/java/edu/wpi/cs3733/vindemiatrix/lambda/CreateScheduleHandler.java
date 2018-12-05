@@ -116,6 +116,25 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				}
 			}
 			
+			// validate date and time ranges
+			if (success) {
+				Calendar c = Calendar.getInstance();
+				c.setTime(new Date(System.currentTimeMillis() / 1000L));
+				c.set(Calendar.HOUR, 0);
+				c.set(Calendar.MINUTE, 0);
+				c.set(Calendar.SECOND, 0);
+				c.set(Calendar.MILLISECOND, 1);
+				
+				success &= c.getTime().getTime() <= date1.getTime();
+				success &= date1.getTime() < date2.getTime();
+				success &= time1.getTime() < time2.getTime();
+				
+				if (success == false) {
+					responseObj = new CreateScheduleResponse(400);
+			        response.put("body", new Gson().toJson(responseObj));
+				}
+			}
+			
 			// create schedule
 			if (success) {
 				long timeDifference = time2.getTime() - time1.getTime();

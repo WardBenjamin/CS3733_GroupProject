@@ -152,7 +152,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 									c.add(Calendar.MINUTE, request.meeting_duration);
 									String end_time = timeFormat.format(c.getTime()) + ":00";
 									
-									time_slots[k++] = ts_dao.createTimeSlot(s.id, date, start_time, end_time);
+									time_slots[k++] = ts_dao.createTimeSlot(s.id, date, start_time, end_time, request.default_open);
 								}
 							}
 							

@@ -119,17 +119,18 @@ public class TimeSlotDAO {
 //		return new Constant (name, value);
 //	}
 	
-	public TimeSlot createTimeSlot(int schedule_id, String date, String start_time, String end_time) throws Exception {
+	public TimeSlot createTimeSlot(int schedule_id, String date, String start_time, String end_time, int default_open) throws Exception {
 		TimeSlot ts = null;
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(
-				"INSERT INTO `time_slots` (`schedule_id`, `date`, `start_time`, `end_time`) VALUES (?,?,?,?);");
+				"INSERT INTO `time_slots` (`schedule_id`, `date`, `start_time`, `end_time`, `is_open`) VALUES (?,?,?,?,?);");
 			
 			ps.setInt(1, schedule_id);
 			ps.setString(2, date);
 			ps.setString(3, start_time);
 			ps.setString(4, end_time);
+			ps.setInt(5, default_open);
 			ps.execute();
 			
 			ps = conn.prepareStatement("SELECT `id` FROM `time_slots` WHERE `schedule_id` = ? AND `date` = ? AND `start_time` = ? AND `end_time` = ?");
@@ -146,7 +147,7 @@ public class TimeSlotDAO {
 					id = rs.getInt(1);
 				}
 				
-				ts = new TimeSlot(id, date, start_time, end_time, true, null);
+				ts = new TimeSlot(id, date, start_time, end_time, default_open == 1, null);
 			}
 
 			ps.close();

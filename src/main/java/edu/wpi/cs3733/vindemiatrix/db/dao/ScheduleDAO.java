@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
 import edu.wpi.cs3733.vindemiatrix.model.Schedule;
@@ -110,26 +112,48 @@ public class ScheduleDAO {
 	
 	/*
 	 * deletes a schedule 
-	 * @param secretCode secret code for the schedule 
 	 * @param id schedule id
-	 * @return true if correct secret code, false if not, and exception if error
+	 * @return true unless exception
 	 */
-	public boolean deleteSchedule(String secretCode, int id) throws Exception {
+	public boolean deleteSchedule(int id) throws Exception {
+		try {
+			PreparedStatement ps = conn.prepareStatement("DELETE FROM `schedules` WHERE `id` = ?");
+			ps.setInt(1, id);
+			ps.executeUpdate();
+			ps.close();
+			return true;
+		} catch (Exception e) {
+			throw new Exception("Failed to delete schedule: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * check if the secret code given is the code for the given schedule
+	 * @param id the schedule ID
+	 * @param secretCode the schedule secret code
+	 * @return 0 if good, 1 if invalid form, 2 if incorrect code
+	 * @throws Exception on SQL failure
+	 */
+	public int isAuthorized(int id, String secretCode) throws Exception {
+		Pattern p = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+		Matcher m = p.matcher(secretCode);
+		
+		if (!m.find()) {
+			return 1;
+		}
+		
 		try {
 			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id = ?;");
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
 			
 			if (rs.next() && rs.getString(2).equals(secretCode)) {
-				ps = conn.prepareStatement("DELETE FROM `schedules` WHERE `id` = ?");
-				ps.setInt(1, id);
-				ps.executeUpdate();
 				ps.close();
-				return true;
+				return 0;
 			}
 			
 			ps.close();
-			return false;
+			return 2;
 		} catch (Exception e) {
 			throw new Exception("Failed to delete schedule: " + e.getMessage());
 		}

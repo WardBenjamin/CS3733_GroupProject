@@ -40,7 +40,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 
 		JSONObject header = new JSONObject();
 		header.put("Content-Type",  "application/json");
-		header.put("Access-Control-Allow-Methods", "PUT,OPTIONS");
+		header.put("Access-Control-Allow-Methods", "GET,PUT,DELETE,OPTIONS");
 		header.put("Access-Control-Allow-Origin",  "*");
         
 		JSONObject response = new JSONObject();
@@ -67,7 +67,6 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				body = (String) event.get("body");
 				
 				if (body == null) {
-					// FIXME for testing only
 					body = event.toJSONString();
 				}
 			}

@@ -23,6 +23,14 @@ public class TimeSlotDAO {
 		}
 	}
 	
+	/**
+	 * Get the time slots with the schedule ID and a date range
+	 * @param id Schedule ID
+	 * @param start_of_week start of the week
+	 * @param end_of_week end of the week
+	 * @return a List of time slots
+	 * @throws Exception on SQL failure
+	 */
 	public List<TimeSlot> getTimeSlots(int id, String start_of_week, String end_of_week) throws Exception {
 		List<TimeSlot> timeSlots = new ArrayList<>();
 		
@@ -119,6 +127,16 @@ public class TimeSlotDAO {
 //		return new Constant (name, value);
 //	}
 	
+	/**
+	 * Create a time slot with given parameters
+	 * @param schedule_id the schedule ID for this slot
+	 * @param date the date for the time slot
+	 * @param start_time the start time
+	 * @param end_time the end time
+	 * @param default_open whether to have the slot open or closed
+	 * @return TimeSlot object
+	 * @throws Exception on SQL failure of insertion/creation
+	 */
 	public TimeSlot createTimeSlot(int schedule_id, String date, String start_time, String end_time, int default_open) throws Exception {
 		TimeSlot ts = null;
 		
@@ -143,9 +161,7 @@ public class TimeSlotDAO {
 				ResultSet rs = ps.getResultSet();
 
 				int id = 0;
-				if (rs.first()) {
-					id = rs.getInt(1);
-				}
+				if (rs.first()) { id = rs.getInt(1); }
 				
 				ts = new TimeSlot(id, date, start_time, end_time, default_open == 1, null);
 			}
@@ -156,5 +172,42 @@ public class TimeSlotDAO {
 		}
 		
 		return ts;
+	}
+	
+	/**
+	 * Delete all the time slots and the meetings they contain for a given schedule
+	 * @note no need to validate secret code as this is only (and should only) be called after schedule deletion, which checks secret code
+	 * @param schedule_id the schedule ID
+	 * @return true of success, false on failure
+	 * @exception Exception on SQL failure
+	 */
+	public boolean deleteTimeSlots(int schedule_id) throws Exception {
+		boolean success = true;
+		
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `time_slots` WHERE `schedule_id` = ?;");
+			
+			ps.setInt(1, schedule_id);
+			ResultSet rs = ps.executeQuery();
+			
+			while (rs.next()) {
+				int meeting_id = 0;
+				if ((meeting_id = rs.getInt(7)) != 0) {
+					ps = conn.prepareStatement("DELETE FROM `meetings` WHERE `id` = ?");
+					ps.setInt(1, meeting_id);
+					ps.execute();
+				}
+			}
+			
+			ps = conn.prepareStatement("DELETE FROM `time_slots` WHERE `schedule_id` = ?");
+			ps.setInt(1,  schedule_id);
+			success = ps.executeUpdate() != 0;
+			
+			ps.close();
+		} catch (Exception e) {
+			throw new Exception("Exception while deleting time slots: " + e.getMessage());
+		}
+		
+		return success;
 	}
 }

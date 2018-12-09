@@ -5,7 +5,8 @@ import java.util.Iterator;
 
 public class Schedule {
 	public final int id;
-	public final String organizer;
+	public final String secret_code;
+	public final String name;
 	public final String startDate;
 	public final String endDate;
 	public final String startTime;
@@ -17,16 +18,18 @@ public class Schedule {
 	/**
 	 * A schedule object to represent schedules in the scheduler.
 	 * @param id The schedule ID
-	 * @param organizer The secret code for the organizer
+	 * @param secret_code The secret code for the organizer
+	 * @param name The organizer's name
 	 * @param startDate The start date of the schedule
 	 * @param endDate The end date of the schedule
 	 * @param startTime The start time of the schedule
 	 * @param endTime The end time of the schedule
 	 */
-	public Schedule(int id, String organizer, String startDate, String endDate, 
+	public Schedule(int id, String secret_code, String name, String startDate, String endDate, 
 			String startTime, String endTime, int meetingDuration) {
 		this.id = id;
-		this.organizer = organizer;
+		this.secret_code = secret_code;
+		this.name = name;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.startTime = startTime;

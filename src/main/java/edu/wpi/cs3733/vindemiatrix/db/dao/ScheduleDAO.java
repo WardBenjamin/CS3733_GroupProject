@@ -34,8 +34,8 @@ public class ScheduleDAO {
 			ResultSet result = ps.executeQuery();
 			
 			if (result.next()) {
-				s = new Schedule(id, "", result.getString(3), 
-						result.getString(4), result.getString(5), result.getString(6), result.getInt(7));
+				s = new Schedule(id, "", result.getString(3), result.getString(4), 
+						result.getString(5), result.getString(6), result.getString(7), result.getInt(8));
 			}
 			
 			result.close();
@@ -47,36 +47,38 @@ public class ScheduleDAO {
 		}
 	}
 	
-	/*
+	/**
 	 * Creates a schedule 
+	 * @param name the organizer's name
 	 * @param start_date schedule start date
 	 * @param end_date schedule end date
 	 * @param start_time schedule start time 
 	 * @param end_time schedule end time 
 	 * @return The schedule or null on failure
 	 */
-	public Schedule createSchedule(String start_date, String end_date, String start_time, 
+	public Schedule createSchedule(String name, String start_date, String end_date, String start_time, 
 			String end_time, int meeting_duration) throws Exception{
 		Schedule s = null;
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(
-					"INSERT INTO `schedules` (`start_date`, `end_date`, "
-					+ "`start_time`, `end_time`, `organizer`, `meeting_duration`) "
-					+ "VALUES (?,?,?,?,?,?);");
-			
-			ps.setString(1, start_date);
-			ps.setString(2, end_date);
-			ps.setString(3, start_time);
-			ps.setString(4, end_time);
-			ps.setInt(6, meeting_duration);
+					"INSERT INTO `schedules` (`name`, `start_date`, `end_date`, "
+					+ "`start_time`, `end_time`, `secret_code`, `meeting_duration`) "
+					+ "VALUES (?,?,?,?,?,?,?);");
+
+			ps.setString(1, name);
+			ps.setString(2, start_date);
+			ps.setString(3, end_date);
+			ps.setString(4, start_time);
+			ps.setString(5, end_time);
+			ps.setInt(7, meeting_duration);
 			
 			UUID uuid = UUID.randomUUID();
 			
-			ps.setString(5, uuid.toString());
+			ps.setString(6, uuid.toString());
 			ps.execute();
 			
-			ps = conn.prepareStatement("SELECT `id` FROM `schedules` WHERE `organizer` = ?");
+			ps = conn.prepareStatement("SELECT `id` FROM `schedules` WHERE `secret_code` = ?");
 			ps.setString(1, uuid.toString());
 
 			if (ps.execute()) {
@@ -87,7 +89,7 @@ public class ScheduleDAO {
 					id = rs.getInt(1);
 				}
 				
-				s = new Schedule(id, uuid.toString(), start_date, end_date, start_time, end_time, meeting_duration);
+				s = new Schedule(id, uuid.toString(), name, start_date, end_date, start_time, end_time, meeting_duration);
 			}
 
 			ps.close();

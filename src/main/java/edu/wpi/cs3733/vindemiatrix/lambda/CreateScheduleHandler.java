@@ -119,12 +119,13 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			// validate date and time ranges
 			if (success) {
 				Calendar c = Calendar.getInstance();
-				c.setTime(new Date(System.currentTimeMillis() / 1000L));
-				c.set(Calendar.HOUR, 0);
-				c.set(Calendar.MINUTE, 0);
-				c.set(Calendar.SECOND, 0);
-				c.set(Calendar.MILLISECOND, 1);
-				
+				c.setTime(new Date(System.currentTimeMillis()));
+//				c.set(Calendar.HOUR, 0);
+//				c.set(Calendar.MINUTE, 0);
+//				c.set(Calendar.SECOND, 0);
+//				c.set(Calendar.MILLISECOND, 0);
+
+				logger.log("Checking if in past: " + (c.getTime().getTime() <= date1.getTime()) + "\n");
 				success &= c.getTime().getTime() <= date1.getTime();
 				success &= date1.getTime() < date2.getTime();
 				success &= time1.getTime() < time2.getTime();
@@ -150,7 +151,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				logger.log("Determined start and end dates and times, creating schedule...\n");
 
 				// create schedule and generate response
-				Schedule s = createSchedule(request.start_date, request.end_date, 
+				Schedule s = createSchedule(request.name, request.start_date, request.end_date, 
 						request.start_time + ":00", request.end_time + ":00", request.meeting_duration);
 				if (s != null) {
 					logger.log("Created schedule. Now creating time slots...\n");
@@ -178,7 +179,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 							c.add(Calendar.DAY_OF_MONTH, 1);
 						}
 						
-						responseObj = new CreateScheduleResponse(s.organizer, request, days, timeSlotsPerDay, 200);
+						responseObj = new CreateScheduleResponse(s.name, s.secret_code, request, s.id, days, timeSlotsPerDay, 200);
 				        response.put("body", new Gson().toJson(responseObj));
 					} catch (Exception e) {
 						logger.log("Failed to create time slots.\n");
@@ -210,12 +211,12 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 	 * @param meeting_duration The length of a meeting in minutes
 	 * @return the schedule that was created
 	 */
-	Schedule createSchedule(String start_date, String end_date, String start_time, String end_time, int meeting_duration) {
+	Schedule createSchedule(String name, String start_date, String end_date, String start_time, String end_time, int meeting_duration) {
 		Schedule s;
 		ScheduleDAO dao = new ScheduleDAO();
 
 		try {
-			s = dao.createSchedule(start_date, end_date, start_time, end_time, meeting_duration);
+			s = dao.createSchedule(name, start_date, end_date, start_time, end_time, meeting_duration);
 		} catch (Exception e) {
 			System.out.println("createSchedule(): Error creating schedule: " + e.toString() + "\n");
 			s = null;

@@ -1,6 +1,7 @@
 package edu.wpi.cs3733.vindemiatrix.lambda.request;
 
 public class CreateScheduleRequest {
+	public final String name;
 	public final String start_date;
 	public final String end_date;
 	public final String start_time;
@@ -10,13 +11,17 @@ public class CreateScheduleRequest {
 
 	/**
 	 * Create a request data object with the start/end dates and start/end times. 
-	 * @param sd Start Date
-	 * @param ed End Date
-	 * @param st Start Time
-	 * @param et End Time
+	 * @param name the organizer's name
+	 * @param start_date Start Date
+	 * @param end_date End Date
+	 * @param start_time Start Time
+	 * @param end_time End Time
+	 * @param meeting_duration the meeting duration
+	 * @param default_open whether to default time slots to open or closed
 	 */
-	public CreateScheduleRequest(String start_date, String end_date, 
+	public CreateScheduleRequest(String name, String start_date, String end_date, 
 			String start_time, String end_time, int meeting_duration, int default_open) {
+		this.name = name;
 		this.start_date = start_date;
 		this.end_date = end_date;
 		this.start_time = start_time;
@@ -26,12 +31,12 @@ public class CreateScheduleRequest {
 	}
 	
 	public boolean isMissingFields() {
-		return (start_date == null) || (end_date == null) || 
+		return (name == null) || (start_date == null) || (end_date == null) || 
 				(start_time == null) || (end_time == null) || (meeting_duration == 0);
 	}
 	
 	public String toString() {
-		return "CreateSchedule(" + start_date + "," + end_date + "," + 
+		return "CreateSchedule(" + name + "," + start_date + "," + end_date + "," + 
 								start_time + "," + end_time + "," + 
 								meeting_duration + "," + default_open + ")";
 	}

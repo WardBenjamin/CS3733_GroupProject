@@ -25,17 +25,17 @@ public class MeetingDAO {
 	/*
 	 * creates a meeting
 	 * @param timeSlotID the time slot to create the meeting within
-	 * @param usrName user that is making the meeting
+	 * @param name user that is making the meeting
 	 */
-	public Boolean createMeeting(int timeSlotId, String usrName) throws Exception {
+	public Boolean createMeeting(int timeSlotId, String name) throws Exception {
 		try {
 			Meeting m = null; 
 			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `meetings` WHERE name = ?;");
 			ps.setNString(1, timeSlotId);
 			ResultSet resultSet ps.executeQuery(); 
-			ps = conn.prepareStatement("INSERT INTO Meetings (timSlotId, usrName) values(?,?);");
+			ps = conn.prepareStatement("INSERT INTO Meetings (timSlotId, name) values(?,?);");
 			ps.setInt(1, timeSlotId);
-			ps.setString(2, usrName);
+			ps.setString(2, name);
 			ps.execute();
 			resultSet.close();
 			ps.close();
@@ -68,8 +68,8 @@ public class MeetingDAO {
 	}
 	private Meeting generateMeeting(ResultSet resultSet) throws Exception {
 		int timeSlotId  = resultSet.getInt("timeSlotId");
-		String usrName = resultSet.getString("usrName");
-		return new Meeting (timeSlotId, usrName);
+		String name = resultSet.getString("name");
+		return new Meeting (timeSlotId, name);
 	}
 
 }

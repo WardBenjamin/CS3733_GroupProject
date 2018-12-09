@@ -5,6 +5,7 @@ import java.sql.*;
 import java.util.ArrayList; 
 import java.util.Calendar; 
 import java.util.List;
+import java.util.UUID;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
 import edu.wpi.cs3733.vindemiatrix.model.Meeting;
@@ -25,27 +26,31 @@ public class MeetingDAO {
 	/*
 	 * creates a meeting
 	 * @param timeSlotID the time slot to create the meeting within
-	 * @param usrName user that is making the meeting
+	 * @param name user that is making the meeting
 	 */
-	public Boolean createMeeting(int timeSlotId, String usrName) throws Exception {
+	public Meeting createMeeting(int timeSlotId, String name) throws Exception {
 		try {
 			Meeting m = null; 
-			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `meetings` WHERE name = ?;");
-			ps.setNString(1, timeSlotId);
-			ResultSet resultSet ps.executeQuery(); 
-			ps = conn.prepareStatement("INSERT INTO Meetings (timSlotId, usrName) values(?,?);");
-			ps.setInt(1, timeSlotId);
-			ps.setString(2, usrName);
+			PreparedStatement ps = conn.prepareStatement("INSERT INTO `meetings` (`secret_code`, `name`) VALUES (?,?);");
+			
+			UUID uuid = UUID.randomUUID();
+			ps.setString(1, uuid.toString());
+			ps.setString(2, name);
 			ps.execute();
-			resultSet.close();
+			
+			ps = conn.prepareStatement("SELECT * FROM `meetings` WHERE `secret_code` = ?;");
+			ps.setString(1, uuid.toString());
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next()) {
+				m = new Meeting(rs.getInt(1), uuid.toString(), name);
+			}
+			
 			ps.close();
-
-			if (constant == null) {
-				throw new Exception("Constant not found");
-			} 
-		}
-		catch (Exception e) {
-			throw new Exception("Failed to insert schedule: " + e.getMessage());
+			rs.close();
+			return m;
+		} catch (Exception e) {
+			throw new Exception("Failed to create meeting: " + e.getMessage());
 		}
 	}
 	
@@ -56,20 +61,14 @@ public class MeetingDAO {
 	 */
 	public boolean deleteMeeting(String secretCode, int id) throws Exception{
 		try {
-			PreparedStatement ps = conn.prepareStatement("DELETE FROM Meetings (secretCode, id) values(?,?);");
+			PreparedStatement ps = conn.prepareStatement("DELETE FROM `meetings` (`secret_code`, `id`) values(?,?);");
 			ps.setString(1, secretCode);
-			ps.setInt(2,  id);
+			ps.setInt(2, id);
 			int numAltered = ps.executeUpdate();
 			ps.close();
-			return (numAltered ==1);			
-		}catch (Exception e) {
+			return (numAltered == 1);
+		} catch (Exception e) {
 			throw new Exception("Failed to delete meeting: " + e.getMessage());
 		}
 	}
-	private Meeting generateMeeting(ResultSet resultSet) throws Exception {
-		int timeSlotId  = resultSet.getInt("timeSlotId");
-		String usrName = resultSet.getString("usrName");
-		return new Meeting (timeSlotId, usrName);
-	}
-
 }

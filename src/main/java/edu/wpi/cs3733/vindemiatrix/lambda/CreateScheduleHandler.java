@@ -22,9 +22,11 @@ import com.google.gson.Gson;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
 import edu.wpi.cs3733.vindemiatrix.db.dao.ScheduleDAO;
+import edu.wpi.cs3733.vindemiatrix.db.dao.TimeSlotDAO;
 import edu.wpi.cs3733.vindemiatrix.lambda.request.CreateScheduleRequest;
 import edu.wpi.cs3733.vindemiatrix.lambda.response.CreateScheduleResponse;
 import edu.wpi.cs3733.vindemiatrix.model.Schedule;
+import edu.wpi.cs3733.vindemiatrix.model.TimeSlot;
 
 public class CreateScheduleHandler implements RequestStreamHandler {
 
@@ -38,7 +40,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 
 		JSONObject header = new JSONObject();
 		header.put("Content-Type",  "application/json");
-		header.put("Access-Control-Allow-Methods", "PUT,OPTIONS");
+		header.put("Access-Control-Allow-Methods", "GET,PUT,DELETE,OPTIONS");
 		header.put("Access-Control-Allow-Origin",  "*");
         
 		JSONObject response = new JSONObject();
@@ -65,7 +67,6 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				body = (String) event.get("body");
 				
 				if (body == null) {
-					// FIXME for testing only
 					body = event.toJSONString();
 				}
 			}
@@ -91,13 +92,14 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 			SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+			SimpleDateFormat fullFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 			java.util.Date date1 = null;
 			java.util.Date date2 = null;
 			java.util.Date time1 = null;
 			java.util.Date time2 = null;
 			
 			int days = 0;
-			int numSlots = 0;
+			int timeSlotsPerDay = 0;
 			
 			if (success) {
 				try {
@@ -114,26 +116,77 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				}
 			}
 			
+			// validate date and time ranges
+			if (success) {
+				Calendar c = Calendar.getInstance();
+				c.setTime(new Date(System.currentTimeMillis()));
+//				c.set(Calendar.HOUR, 0);
+//				c.set(Calendar.MINUTE, 0);
+//				c.set(Calendar.SECOND, 0);
+//				c.set(Calendar.MILLISECOND, 0);
+
+				logger.log("Checking if in past: " + (c.getTime().getTime() <= date1.getTime()) + "\n");
+				success &= c.getTime().getTime() <= date1.getTime();
+				success &= date1.getTime() < date2.getTime();
+				success &= time1.getTime() < time2.getTime();
+				
+				if (success == false) {
+					responseObj = new CreateScheduleResponse(400);
+			        response.put("body", new Gson().toJson(responseObj));
+				}
+			}
+			
 			// create schedule
 			if (success) {
 				long timeDifference = time2.getTime() - time1.getTime();
 				long seconds = timeDifference / 1000;
 				long minutes = seconds / 60;
 				
-				numSlots = (int) minutes / request.meeting_duration;
+				timeSlotsPerDay = (int) minutes / request.meeting_duration;
 				
 				long dateDifference = date2.getTime() - date1.getTime();
-				// ms -> sec -> min -> hr -> day
+				// ms -> sec -> min -> hr -> day)
 				days = (int) (dateDifference / 1000 / 60 / 60 / 24);		
 				
 				logger.log("Determined start and end dates and times, creating schedule...\n");
 
 				// create schedule and generate response
-				Schedule s = createSchedule(request.start_date, request.end_date, 
+				Schedule s = createSchedule(request.name, request.start_date, request.end_date, 
 						request.start_time + ":00", request.end_time + ":00", request.meeting_duration);
 				if (s != null) {
-					responseObj = new CreateScheduleResponse(s.organizer, 200);
-			        response.put("body", new Gson().toJson(responseObj));
+					logger.log("Created schedule. Now creating time slots...\n");
+					TimeSlot[] time_slots = new TimeSlot[(int) (days * timeSlotsPerDay)];
+					TimeSlotDAO ts_dao = new TimeSlotDAO();
+					Calendar c = Calendar.getInstance();
+					
+					try {
+						c.setTime(fullFormat.parse(request.start_date + " " + request.start_time));
+						int k = 0;
+						for (int i = 0; i < days; i++) {
+							if (c.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY &&
+								c.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+								for(int j = 0; j < timeSlotsPerDay; j++) {
+									String date = dateFormat.format(c.getTime());
+									String start_time = timeFormat.format(c.getTime()) + ":00";
+									c.add(Calendar.MINUTE, request.meeting_duration);
+									String end_time = timeFormat.format(c.getTime()) + ":00";
+									
+									time_slots[k++] = ts_dao.createTimeSlot(s.id, date, start_time, end_time, request.default_open);
+								}
+							}
+							
+							c.add(Calendar.MINUTE, -1 * timeSlotsPerDay * request.meeting_duration);
+							c.add(Calendar.DAY_OF_MONTH, 1);
+						}
+						
+						responseObj = new CreateScheduleResponse(s.name, s.secret_code, request, s.id, days, timeSlotsPerDay, 200);
+				        response.put("body", new Gson().toJson(responseObj));
+					} catch (Exception e) {
+						logger.log("Failed to create time slots.\n");
+						e.printStackTrace();
+						responseObj = new CreateScheduleResponse(500);
+				        response.put("body", new Gson().toJson(responseObj));
+					}
 				} else {
 					responseObj = new CreateScheduleResponse(500);
 			        response.put("body", new Gson().toJson(responseObj));
@@ -150,130 +203,20 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 	}
 	
 	/**
-	 * 
-	 * @param request
-	 * @param response
-	 * @param start_date_arr
-	 * @param end_date_arr
-	 * @return True on success, false on failure
-	 */
-	@SuppressWarnings("unchecked")
-	boolean parseDates(CreateScheduleRequest request, JSONObject response, 
-			int[] start_date_arr, int[] end_date_arr) {
-		boolean success = true;
-		
-		for (int a = 0; a < 2; a++) {
-			String date_str[];
-			int date[] = new int[3];
-			
-			if (a == 0) {
-				date_str = request.start_date.split("/");
-			} else {
-				date_str = request.end_date.split("/");
-			}
-			
-			try {
-				for (int i = 0; i < 3; i++) {
-					if (date_str[i] != null) {
-						date[i] = Integer.parseInt(date_str[i]);
-					} else {
-						logger.log("parseDates(): Malformed date string\n");
-						success = false;
-						break;
-					}
-				}
-			} catch (NumberFormatException e) {
-				logger.log("parseDates(): Date integer parse error: " + e.toString() + "\n");
-				success = false;
-			}
-			
-			// on invalid input, throw a 400 response
-			if (!success) { 
-				response.put("body", new Gson().toJson(new CreateScheduleResponse(400)));
-				break; 
-			}
-			
-			// store the date
-			if (a == 0) {
-				start_date_arr = date;
-			} else {
-				end_date_arr = date;
-			}
-		}
-		
-		return success;
-	}
-	
-	/**
-	 * 
-	 * @param request
-	 * @param response
-	 * @param start_time_arr
-	 * @param end_time_arr
-	 * @return True on success, false on failure
-	 */
-	@SuppressWarnings("unchecked")
-	boolean parseTimes(CreateScheduleRequest request, JSONObject response, 
-			int[] start_time_arr, int[] end_time_arr) {
-		boolean success = true;
-		
-		for (int a = 0; a < 2; a++) {
-			String time_str[];
-			int time[] = new int[2];
-			
-			if (a == 0) {
-				time_str = request.start_time.split(":");
-			} else {
-				time_str = request.end_time.split(":");
-			}
-			
-			try {
-				for (int i = 0; i < 2; i++) {
-					if (time_str[i] != null) {
-						time[i] = Integer.parseInt(time_str[i]);
-					} else {
-						logger.log("parseTimes(): Malformed time string\n");
-						success = false;
-						break;
-					}
-				}
-			} catch (NumberFormatException e) {
-				logger.log("parseTimes(): Time integer parse error: " + e.toString() + "\n");
-				success = false;
-			}
-			
-			// on invalid input, throw a 400 response
-			if (!success) { 
-				response.put("body", new Gson().toJson(new CreateScheduleResponse(400)));
-				break; 
-			}
-			
-			// store the time
-			if (a == 0) {
-				start_time_arr = time;
-			} else {
-				end_time_arr = time;
-			}
-		}
-		
-		return success;
-	}
-	
-	/**
 	 * Create a schedule in the database
 	 * @param start_date The start date
 	 * @param end_date The end date
 	 * @param start_time The start time
 	 * @param end_time The end time
 	 * @param meeting_duration The length of a meeting in minutes
-	 * @return the schedule that was created
+	 * @return the schedule that was created 
 	 */
-	Schedule createSchedule(String start_date, String end_date, String start_time, String end_time, int meeting_duration) {
+	Schedule createSchedule(String name, String start_date, String end_date, String start_time, String end_time, int meeting_duration) {
 		Schedule s;
 		ScheduleDAO dao = new ScheduleDAO();
 
 		try {
-			s = dao.createSchedule(start_date, end_date, start_time, end_time, meeting_duration);
+			s = dao.createSchedule(name, start_date, end_date, start_time, end_time, meeting_duration);
 		} catch (Exception e) {
 			System.out.println("createSchedule(): Error creating schedule: " + e.toString() + "\n");
 			s = null;

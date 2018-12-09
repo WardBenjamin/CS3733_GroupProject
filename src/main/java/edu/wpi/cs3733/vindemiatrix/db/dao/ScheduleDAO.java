@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
 import edu.wpi.cs3733.vindemiatrix.model.Schedule;
@@ -20,75 +22,74 @@ public class ScheduleDAO {
 	}
 	
 	/*
-	 * gets a schedule and all associated time slots and meetings
+	 * Gets a schedule and all associated time slots within the week
 	 * @param id id of schedule to retrieve 
+	 * @param start_date Start day of week for the weekly schedule to get
 	 */
-	public Schedule getSchedule(int id) throws Exception {
+	public Schedule getSchedule(int id, String start_date) throws Exception {
 		try {
 			Schedule s = null;
-			// FIXME invalid query
-			PreparedStatement ps = conn.prepareStatement("SELECT * FROM Schedules WHERE id=?;");
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id=?;");
 			ps.setInt(1, id);
-			ResultSet rSet = ps.executeQuery();
+			ResultSet result = ps.executeQuery();
 			
-			while (rSet.next()) {
-				// s = generateSchedule(rSet); FIXME: NOT DEFINED
+			if (result.next()) {
+				s = new Schedule(id, "", result.getString(3), result.getString(4), 
+						result.getString(5), result.getString(6), result.getString(7), result.getInt(8));
 			}
-			rSet.close();
+			
+			result.close();
 			ps.close();
 			return s; 
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("Failed to get schedule: " + e.getMessage()) ; 
 		}
-		
 	}
 	
-	/*
+	/**
 	 * Creates a schedule 
+	 * @param name the organizer's name
 	 * @param start_date schedule start date
 	 * @param end_date schedule end date
 	 * @param start_time schedule start time 
 	 * @param end_time schedule end time 
 	 * @return The schedule or null on failure
 	 */
-	public Schedule createSchedule(String start_date, String end_date, String start_time, 
+	public Schedule createSchedule(String name, String start_date, String end_date, String start_time, 
 			String end_time, int meeting_duration) throws Exception{
 		Schedule s = null;
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(
-					"INSERT INTO `schedules` (`start_date`, `end_date`, "
-					+ "`start_time`, `end_time`, `organizer`, `meeting_duration`) "
-					+ "VALUES (?,?,?,?,?,?);");
-			
-			ps.setString(1, start_date);
-			ps.setString(2, end_date);
-			ps.setString(3, start_time);
-			ps.setString(4, end_time);
-			ps.setInt(6, meeting_duration);
+					"INSERT INTO `schedules` (`name`, `start_date`, `end_date`, "
+					+ "`start_time`, `end_time`, `secret_code`, `meeting_duration`) "
+					+ "VALUES (?,?,?,?,?,?,?);");
+
+			ps.setString(1, name);
+			ps.setString(2, start_date);
+			ps.setString(3, end_date);
+			ps.setString(4, start_time);
+			ps.setString(5, end_time);
+			ps.setInt(7, meeting_duration);
 			
 			UUID uuid = UUID.randomUUID();
 			
-			ps.setString(5, uuid.toString());
+			ps.setString(6, uuid.toString());
 			ps.execute();
 			
-			ps = conn.prepareStatement("SELECT `id` FROM `schedules` WHERE `organizer` = ?");
+			ps = conn.prepareStatement("SELECT `id` FROM `schedules` WHERE `secret_code` = ?");
 			ps.setString(1, uuid.toString());
 
 			if (ps.execute()) {
-				System.out.println("executed select statement");
 				ResultSet rs = ps.getResultSet();
-				System.out.println("got result set");
+
 				int id = 0;
 				if (rs.first()) {
 					id = rs.getInt(1);
 				}
 				
-				System.out.println("got id of " + id);
-				
-				s = new Schedule(id, uuid.toString(), start_date, end_date, start_time, end_time, meeting_duration);
-				System.out.println("created schedule");
+				s = new Schedule(id, uuid.toString(), name, start_date, end_date, start_time, end_time, meeting_duration);
 			}
 
 			ps.close();
@@ -113,17 +114,48 @@ public class ScheduleDAO {
 	
 	/*
 	 * deletes a schedule 
-	 * @param secretCode secret code for the schedule 
-	 * @param id schedule id 
-	 * FIXME fix the queries and function
+	 * @param id schedule id
+	 * @return true unless exception
 	 */
-	public boolean deleteSchedule(String secretCode, int id) throws Exception {
+	public boolean deleteSchedule(int id) throws Exception {
 		try {
-			PreparedStatement ps = conn.prepareStatement("DELETE FROM Schedules WHERE id=?;");
+			PreparedStatement ps = conn.prepareStatement("DELETE FROM `schedules` WHERE `id` = ?");
 			ps.setInt(1, id);
-			int numAffect = ps.executeUpdate(); 
+			ps.executeUpdate();
 			ps.close();
-			return (numAffect == 1);
+			return true;
+		} catch (Exception e) {
+			throw new Exception("Failed to delete schedule: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * check if the secret code given is the code for the given schedule
+	 * @param id the schedule ID
+	 * @param secretCode the schedule secret code
+	 * @return 0 if good, 1 if invalid form, 2 if incorrect code
+	 * @throws Exception on SQL failure
+	 */
+	public int isAuthorized(int id, String secretCode) throws Exception {
+		Pattern p = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+		Matcher m = p.matcher(secretCode);
+		
+		if (!m.find()) {
+			return 1;
+		}
+		
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id = ?;");
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next() && rs.getString(2).equals(secretCode)) {
+				ps.close();
+				return 0;
+			}
+			
+			ps.close();
+			return 2;
 		} catch (Exception e) {
 			throw new Exception("Failed to delete schedule: " + e.getMessage());
 		}

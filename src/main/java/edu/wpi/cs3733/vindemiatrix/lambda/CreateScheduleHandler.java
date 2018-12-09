@@ -190,7 +190,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 	 * @param start_time The start time
 	 * @param end_time The end time
 	 * @param meeting_duration The length of a meeting in minutes
-	 * @return the schedule that was created
+	 * @return the schedule that was created 
 	 */
 	Schedule createSchedule(String start_date, String end_date, String start_time, String end_time, int meeting_duration) {
 		Schedule s;

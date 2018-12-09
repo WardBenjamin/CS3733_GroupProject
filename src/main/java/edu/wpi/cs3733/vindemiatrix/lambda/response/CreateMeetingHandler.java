@@ -93,10 +93,10 @@ public class CreateMeetingHandler implements RequestStreamHandler {
 			//no formatting necessary 
 			if (success) {
 				try {
-					if(createMeeting(req.id, req.participant)) {
-						resp = new CreateMeetingResponse("Successfully create meeting for:" + req.participant);
+					if(createMeeting(req.id, req.name)) {
+						resp = new CreateMeetingResponse("Successfully create meeting for:" + req.name);
 					} else {
-						resp = new CreateMeetingResponse("Unable to create meeting for:" + req.participant, 422);
+						resp = new CreateMeetingResponse("Unable to create meeting for:" + req.name, 422);
 					}
 				} catch (java.text.ParseException e) {
 					success = false;
@@ -116,15 +116,15 @@ public class CreateMeetingHandler implements RequestStreamHandler {
 	/**
 	 * Update meeting in the database 
 	 * @param id meeting id 
-	 * @param participant creater of meeting 
+	 * @param name creater of meeting 
 	 * @return the Meeting that was created 
 	 */
-	Meeting createMeeting(int id, String participant) {
+	Meeting createMeeting(int id, String name) {
 		Meeting s;
 		MeetingDAO dao = new MeetingDAO();
 
 		try {  
-			s = dao.createMeeting(id, particpiant);
+			s = dao.createMeeting(id, name);
 		} catch (Exception e) {
 			System.out.println("createMeeting(): Error creating Meeting: " + e.toString() + "\n");
 			s = null;

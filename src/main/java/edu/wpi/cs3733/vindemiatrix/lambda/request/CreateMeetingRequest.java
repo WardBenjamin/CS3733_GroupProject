@@ -1,24 +1,24 @@
 package edu.wpi.cs3733.vindemiatrix.lambda.request;
 
 public class CreateMeetingRequest{
-	public final String userName; 
+	public final String name; 
 	public final int id; 
 
 	/**
-	 * Create a request data object with the userName and timeSlotId
+	 * Create a request data object with the name and timeSlotId
 	 * @param un user name 
 	 * @param idts id of the time slot
 	 */
-	public CreateMeetingRequest(String userName, int id) {
-		this.userName = userName; 
+	public CreateMeetingRequest(String name, int id) {
+		this.name = name; 
 		this.id = id; 
 	}
 	
 	public boolean isMissingFields() {
-		return (userName == null) || (id == 0) ;
+		return (name == null) || (id == 0) ;
 	}
 	
 	public String toString() {
-		return "CreateMeeting(" + userName + "," + id + ")";
+		return "CreateMeeting(" + name + "," + id + ")";
 	}
 }

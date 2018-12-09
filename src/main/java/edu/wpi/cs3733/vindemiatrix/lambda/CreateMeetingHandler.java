@@ -81,7 +81,7 @@ public class CreateMeetingHandler implements RequestStreamHandler {
 		}
 
 		if (!handled) {
-			Boolean success = true; 
+			boolean success = true; 
 			CreateMeetingRequest request = new Gson().fromJson(body, CreateMeetingRequest.class);
 			logger.log(request.toString() + "\n");
 			

@@ -21,6 +21,10 @@ function addTime(timeString, increment) {
     return hour + ":" + min;
 }
 
+function constructTimeSlotDiv(timeSlot) {
+
+}
+
 function loadPage() {
     if (sessionStorage.getItem("schedule") == null) {
         console.log("No schedule in session storage");
@@ -81,6 +85,7 @@ function loadPage() {
                 +  '</h3></div>\n';
 
             for (let k = 0; k < schedule.timeSlotsPerDay; k++) {
+                table_innerHTML += constructTimeSlotDiv()
                 table_innerHTML += '<div style="order:' + (k + 2) + ';" class="Rtable-cell"></div>\n';
             }
         }

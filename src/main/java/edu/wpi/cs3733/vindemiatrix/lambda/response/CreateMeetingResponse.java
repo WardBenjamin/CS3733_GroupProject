@@ -7,25 +7,25 @@ public class CreateMeetingResponse {
 	public final int httpCode;
 	
 	public final int id;
-	public final String participant;
+	public final String name;
 	
-	public CreateScheduleResponse(CreateMeetingRequest req, int id, String participant, int httpCode) {
+	public CreateScheduleResponse(CreateMeetingRequest req, int id, String name, int httpCode) {
 		this.req = req;
 		this.httpCode = httpCode;
 		
 		this.id = id; 
-		this.participant = participant;
+		this.name = name;
 	}
 	
 	public CreateMeetingResponse(int httpCode) {		
 		this.id = 0;
-		this.participant = "";
+		this.name = "";
 		this.httpCode = httpCode;
 	}
 	
 	public String toString() {
-		if (participant == null) { return "NoParticipant"; }
+		if (name == null) { return "Noname"; }
 		
-		return "Meeting(" + participant + ")";
+		return "Meeting(" + name + ")";
 	}
 }

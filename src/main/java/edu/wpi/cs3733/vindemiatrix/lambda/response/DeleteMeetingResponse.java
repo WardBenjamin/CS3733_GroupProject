@@ -17,13 +17,13 @@ public class DeleteMeetingResponse {
 	}
 	
 	public DeleteMeetingResponse(int httpCode) {		
-		this.id = NULL ; 
-		this.participant = NULL ; 
+		this.id = 0;
+		this.secretCode = "" ; 
 		this.httpCode = httpCode;
 	}
 	
 	public String toString() {
-		if (participant == null) { return "NoParticipant"; }
+		if (participant == null) { return "NoName"; }
 		
 		return "Meeting(" + id + ")";
 	}

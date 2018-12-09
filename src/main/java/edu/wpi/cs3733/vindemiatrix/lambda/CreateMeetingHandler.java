@@ -91,6 +91,19 @@ public class CreateMeetingHandler implements RequestStreamHandler {
 				success = false;
 				logger.log("Input is missing fields!\n");
 			}
+			
+			TimeSlotDAO ts_dao = new TimeSlotDAO();
+			
+			try {
+				if (ts_dao.timeSlotHasMeeting(request.time_slot_id)) {
+					response.put("body", new Gson().toJson(new CreateMeetingResponse(400)));
+					success = false;
+				}
+			} catch (Exception e) {
+				response.put("body", new Gson().toJson(new CreateMeetingResponse(500)));
+				success = false;
+				e.printStackTrace();
+			}
 
 			if (success) {
 				Meeting m = createMeeting(request.time_slot_id, request.name);

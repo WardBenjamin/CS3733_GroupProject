@@ -67,6 +67,32 @@ public class TimeSlotDAO {
 	}
 	
 	/**
+	 * Check if a time slot has a meeting
+	 * @param time_slot_id the time slot
+	 * @return true if has a meeting, false otherwise
+	 * @throws Exception on SQL failure
+	 */
+	public boolean timeSlotHasMeeting(int time_slot_id) throws Exception {
+		int meeting = 0;
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `time_slots` WHERE `id` = ?;");
+			ps.setInt(1, time_slot_id);
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next()) {
+				meeting = rs.getInt(7);
+			}
+			
+			ps.close();
+			rs.close();
+		} catch (Exception e) {
+			throw new Exception("Failed to check time slot meeting id: " + e.getMessage());
+		}
+		
+		return meeting != 0;
+	}
+	
+	/**
 	 * Set a time slot's meeting ID to a meeting
 	 * @param time_slot_id the time slot
 	 * @param meeting_id the meeting
@@ -74,16 +100,15 @@ public class TimeSlotDAO {
 	 * @throws Exception on SQL failure
 	 */
 	public boolean setTimeSlotMeeting(int time_slot_id, int meeting_id) throws Exception {
-
 		try {
 			PreparedStatement ps = conn.prepareStatement("UPDATE `time_slots` SET `meeting` = ? WHERE `id` = ?;");
-				
-			ps.setInt(1,  meeting_id);
+
+			ps.setInt(2, time_slot_id);
 			
-			if (time_slot_id == 0) {
-				ps.setNull(2, java.sql.Types.INTEGER);
+			if (meeting_id == 0) {
+				ps.setNull(1, java.sql.Types.INTEGER);
 			} else {
-				ps.setInt(2, time_slot_id);
+				ps.setInt(1,  meeting_id);
 			}
 			
 			int changed = ps.executeUpdate();

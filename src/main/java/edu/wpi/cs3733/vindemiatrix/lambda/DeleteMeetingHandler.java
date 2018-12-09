@@ -87,8 +87,8 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 			
 			if (success) {
 				try {
-					if(dao.deleteMeeting(request.secret_code, request.time_slot_id)) {
-						if (ts_dao.setTimeSlotMeeting(request.time_slot_id, 0)) {
+					if(ts_dao.setTimeSlotMeeting(request.time_slot_id, 0)) {
+						if (dao.deleteMeeting(request.secret_code, request.meeting_id)) {
 							response.put("body", new Gson().toJson(new BasicResponse(200)));
 						} else {
 							response.put("body", new Gson().toJson(new BasicResponse(500)));

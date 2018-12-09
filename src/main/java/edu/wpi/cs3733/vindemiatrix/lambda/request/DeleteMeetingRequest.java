@@ -1,27 +1,27 @@
 package edu.wpi.cs3733.vindemiatrix.lambda.request;
 
 public class DeleteMeetingRequest{
-	public final String secretCode; 
-	public final int timeSlotId; 
+	public final String secret_code; 
+	public final int time_slot_id; 
 
 	/**
 	 * Create a request data object with the userName and timeSlotId
 	 * @param sc secret code
-	 * @param id Time slot id 
+	 * @param time_slot_id Time slot id 
 	 */
-	public DeleteMeetingRequest(String secretCode, int timeSlotId) {
-		this.secretCode = secretCode; 
-		this.id = id; 
+	public DeleteMeetingRequest(String secret_code, int time_slot_id) {
+		this.secret_code = secret_code; 
+		this.time_slot_id = time_slot_id; 
 	}
 	/*
 	 * checks to see if fields are missing 
 	 * 
 	 */
 	public boolean isMissingFields() {
-		return (secretCode == null) || (id == 0) ;
+		return (secret_code == null) || (time_slot_id == 0) ;
 	}
 	
 	public String toString() {
-		return "DeleteMeeting(" + secretCode + "," + id + ")";
+		return "DeleteMeeting(" + secret_code + "," + time_slot_id + ")";
 	}
 }

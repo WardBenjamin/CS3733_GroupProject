@@ -6,10 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.sql.Date;
-import java.sql.Time;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,12 +17,10 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.Gson;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
-import edu.wpi.cs3733.vindemiatrix.db.dao.ScheduleDAO;
+import edu.wpi.cs3733.vindemiatrix.db.dao.MeetingDAO;
 import edu.wpi.cs3733.vindemiatrix.db.dao.TimeSlotDAO;
 import edu.wpi.cs3733.vindemiatrix.lambda.request.DeleteMeetingRequest;
-import edu.wpi.cs3733.vindemiatrix.lambda.response.DeleteMeetingResponse;
-import edu.wpi.cs3733.vindemiatrix.model.Meeting;
-import edu.wpi.cs3733.vindemiatrix.model.TimeSlot;
+import edu.wpi.cs3733.vindemiatrix.lambda.response.BasicResponse;
 
 public class DeleteMeetingHandler implements RequestStreamHandler {
 
@@ -40,13 +34,13 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 
 		JSONObject header = new JSONObject();
 		header.put("Content-Type",  "application/json");
-		header.put("Access-Control-Allow-Methods", "PUT,OPTIONS");
+		header.put("Access-Control-Allow-Methods", "PUT,DELETE,OPTIONS");
 		header.put("Access-Control-Allow-Origin", "*");
         
 		JSONObject response = new JSONObject();
 		response.put("headers", header);
 		
-		DeleteMeetingResponse responseObj = null;
+		BasicResponse responseObj = null;
 		String body = null;
 		boolean handled = false;
 		
@@ -60,7 +54,7 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 			if (method != null && method.equalsIgnoreCase("OPTIONS")) {
 				// OPTIONS needs a 200 response
 				logger.log("OPTIONS request received" + "\n");
-				responseObj = new DeleteMeetingResponse(200);  
+				responseObj = new BasicResponse(200);  
 		        response.put("body", new Gson().toJson(responseObj));
 		        handled = true;
 			} else {
@@ -72,7 +66,7 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 		} catch (ParseException pe) {
 			// unable to process input
 			logger.log(pe.toString() + "\n");
-			responseObj = new DeleteMeetingResponse(422);
+			responseObj = new BasicResponse(422);
 			response.put("body", new Gson().toJson(responseObj));
 	        handled = true;
 		}
@@ -81,27 +75,33 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 			Boolean success = true; 
 			DeleteMeetingRequest request = new Gson().fromJson(body, DeleteMeetingRequest.class);
 			MeetingDAO dao = new MeetingDAO(); 
+			TimeSlotDAO ts_dao = new TimeSlotDAO();
 			logger.log(request.toString() + "\n");
 			
 			// check if fields are missing
 			if (request.isMissingFields()) {
-				response.put("body", new Gson().toJson(new DeleteMeetingResponse(400)));
+				response.put("body", new Gson().toJson(new BasicResponse(400)));
 				success = false;
 				logger.log("Input is missing fields!\n");
 			}
 			
 			if (success) {
 				try {
-					if(dao.deleteMeeting(req.secretCode, req.id)) {
-						resp = new DeleteMeetingResponse("Successfully Delete meeting for:" + req.id);
+					if(dao.deleteMeeting(request.secret_code, request.time_slot_id)) {
+						if (ts_dao.setTimeSlotMeeting(request.time_slot_id, 0)) {
+							response.put("body", new Gson().toJson(new BasicResponse(200)));
+						} else {
+							response.put("body", new Gson().toJson(new BasicResponse(500)));
+						}
 					} else {
-						resp = new DeleteMeetingResponse("Unable to Delete meeting for:" + req.id, 422);
+						response.put("body", new Gson().toJson(new BasicResponse(500)));
 					}
-				} catch (java.text.ParseException e) {
-					success = false;
+				} catch (Exception e) {
 					e.printStackTrace();
+					response.put("body", new Gson().toJson(new BasicResponse(500)));
 				}
 			}
+		}
 		
 		String r = response.toJSONString();
         logger.log("end result:" + r + "\n");
@@ -109,7 +109,5 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
         OutputStreamWriter writer = new OutputStreamWriter(output, "UTF-8");
         writer.write(r);  
         writer.close();
-		}
 	}
-	
 }

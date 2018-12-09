@@ -1,31 +1,29 @@
 package edu.wpi.cs3733.vindemiatrix.lambda.response;
 
-import edu.wpi.cs3733.vindemiatrix.lambda.request.CreateMeetingRequest;
-import edu.wpi.cs3733.vindemiatrix.model.Meeting;
-
 public class CreateMeetingResponse {
 	public final int httpCode;
 	
 	public final int id;
 	public final String name;
+	public final String secret_code;
 	
-	public CreateScheduleResponse(CreateMeetingRequest req, int id, String name, int httpCode) {
-		this.req = req;
+	public CreateMeetingResponse(int id, String name, String secret_code, int httpCode) {
 		this.httpCode = httpCode;
-		
 		this.id = id; 
 		this.name = name;
+		this.secret_code = secret_code;
 	}
 	
 	public CreateMeetingResponse(int httpCode) {		
 		this.id = 0;
 		this.name = "";
+		this.secret_code = "";
 		this.httpCode = httpCode;
 	}
 	
 	public String toString() {
-		if (name == null) { return "Noname"; }
+		if (name == null) { return "NoMeeting"; }
 		
-		return "Meeting(" + name + ")";
+		return "Meeting(" + id + "," + name + "," + secret_code + ")";
 	}
 }

@@ -53,7 +53,7 @@ public class TimeSlotDAO {
 					meeting_query.setInt(1, mid);
 					ResultSet meeting_rs = meeting_query.executeQuery();
 					if (meeting_rs.next()) {
-						m = new Meeting(meeting_rs.getInt(1), "");
+						m = new Meeting(meeting_rs.getInt(1), meeting_rs.getString(3), "");
 					}
 				}
 				
@@ -64,6 +64,35 @@ public class TimeSlotDAO {
 		}
 		
 		return timeSlots;
+	}
+	
+	/**
+	 * Set a time slot's meeting ID to a meeting
+	 * @param time_slot_id the time slot
+	 * @param meeting_id the meeting
+	 * @return true on success, false on failure
+	 * @throws Exception on SQL failure
+	 */
+	public boolean setTimeSlotMeeting(int time_slot_id, int meeting_id) throws Exception {
+
+		try {
+			PreparedStatement ps = conn.prepareStatement("UPDATE `time_slots` SET `meeting` = ? WHERE `id` = ?;");
+				
+			ps.setInt(1,  meeting_id);
+			
+			if (time_slot_id == 0) {
+				ps.setNull(2, java.sql.Types.INTEGER);
+			} else {
+				ps.setInt(2, time_slot_id);
+			}
+			
+			int changed = ps.executeUpdate();
+			ps.close();
+			
+			return changed == 1;
+		} catch (Exception e) {
+			throw new Exception("Failed to update time slot meeting id: " + e.getMessage());
+		}
 	}
 	
 	/*

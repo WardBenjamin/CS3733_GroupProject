@@ -21,10 +21,12 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.Gson;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
+import edu.wpi.cs3733.vindemiatrix.db.dao.MeetingDAO;
 import edu.wpi.cs3733.vindemiatrix.db.dao.ScheduleDAO;
 import edu.wpi.cs3733.vindemiatrix.db.dao.TimeSlotDAO;
 import edu.wpi.cs3733.vindemiatrix.lambda.request.CreateMeetingRequest;
 import edu.wpi.cs3733.vindemiatrix.lambda.response.CreateMeetingResponse;
+import edu.wpi.cs3733.vindemiatrix.lambda.response.GetScheduleResponse;
 import edu.wpi.cs3733.vindemiatrix.model.Meeting;
 import edu.wpi.cs3733.vindemiatrix.model.TimeSlot;
 
@@ -40,7 +42,7 @@ public class CreateMeetingHandler implements RequestStreamHandler {
 
 		JSONObject header = new JSONObject();
 		header.put("Content-Type",  "application/json");
-		header.put("Access-Control-Allow-Methods", "PUT,OPTIONS");
+		header.put("Access-Control-Allow-Methods", "PUT,DELETE,OPTIONS");
 		header.put("Access-Control-Allow-Origin", "*");
         
 		JSONObject response = new JSONObject();
@@ -89,20 +91,16 @@ public class CreateMeetingHandler implements RequestStreamHandler {
 				success = false;
 				logger.log("Input is missing fields!\n");
 			}
-			// what ways to store the data 
-			//no formatting necessary 
+
 			if (success) {
-				try {
-					if(createMeeting(req.id, req.name)) {
-						resp = new CreateMeetingResponse("Successfully create meeting for:" + req.name);
-					} else {
-						resp = new CreateMeetingResponse("Unable to create meeting for:" + req.name, 422);
-					}
-				} catch (java.text.ParseException e) {
-					success = false;
-					e.printStackTrace();
+				Meeting m = createMeeting(request.time_slot_id, request.name);
+				if (m != null) {
+					response.put("body", new Gson().toJson(new CreateMeetingResponse(m.id, m.name, m.secret_code, 200)));
+				} else {
+					response.put("body", new Gson().toJson(new CreateMeetingResponse(500)));
 				}
 			}
+		}
 		
 		String r = response.toJSONString();
         logger.log("end result:" + r + "\n");
@@ -110,21 +108,22 @@ public class CreateMeetingHandler implements RequestStreamHandler {
         OutputStreamWriter writer = new OutputStreamWriter(output, "UTF-8");
         writer.write(r);  
         writer.close();
-		}
 	}
 		
 	/**
 	 * Update meeting in the database 
 	 * @param id meeting id 
-	 * @param name creater of meeting 
+	 * @param name creator of meeting 
 	 * @return the Meeting that was created 
 	 */
 	Meeting createMeeting(int id, String name) {
 		Meeting s;
 		MeetingDAO dao = new MeetingDAO();
+		TimeSlotDAO ts_dao = new TimeSlotDAO();
 
 		try {  
 			s = dao.createMeeting(id, name);
+			ts_dao.setTimeSlotMeeting(id, s.id);
 		} catch (Exception e) {
 			System.out.println("createMeeting(): Error creating Meeting: " + e.toString() + "\n");
 			s = null;

@@ -65,7 +65,7 @@ public class GetScheduleHandler implements RequestStreamHandler {
 				responseObj = new GetScheduleResponse(200);  
 		        response.put("body", new Gson().toJson(responseObj));
 		        handled = true;
-			} else if (method.equalsIgnoreCase("GET")) {
+			} else if (method != null && method.equalsIgnoreCase("GET")) {
 				JSONObject params = (JSONObject) event.get("queryStringParameters");
 				_id = (String) params.get("id");
 				_week_start_date = (String) params.get("week_start_date");

@@ -95,14 +95,14 @@ public class UpdateTimeSlotsHandler implements RequestStreamHandler {
 							}
 							break;
 						case "day":
-							if (ts_dao.updateTimeSlotOnDays(request.day, request.schedule_id, request.open == 1)) {
+							if (ts_dao.updateTimeSlotsOnDay(request.day, request.schedule_id, request.open == 1)) {
 								response.put("body", new Gson().toJson(new BasicResponse(200)));
 							} else {
 								response.put("body", new Gson().toJson(new BasicResponse(500)));
 							}
 							break;
-						case "hour":
-							if (ts_dao.updateTimeSlotOnHours(request.hour, request.schedule_id, request.open == 1)) {
+						case "slot":
+							if (ts_dao.updateTimeSlotOnHours(request.timeslot, request.schedule_id, request.open == 1)) {
 								response.put("body", new Gson().toJson(new BasicResponse(200)));
 							} else {
 								response.put("body", new Gson().toJson(new BasicResponse(500)));
@@ -110,7 +110,7 @@ public class UpdateTimeSlotsHandler implements RequestStreamHandler {
 							break;
 					}
 				} catch (Exception e) {
-					response.put("body", new Gson().toJson(new BasicResponse(500)));
+					response.put("body", new Gson().toJson(new BasicResponse(512)));
 					e.printStackTrace();
 				}
 			}

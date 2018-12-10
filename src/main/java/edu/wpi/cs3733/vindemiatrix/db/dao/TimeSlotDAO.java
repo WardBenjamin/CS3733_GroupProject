@@ -169,38 +169,42 @@ public class TimeSlotDAO {
 	}
 	
 	/**
-	 * update a time slot to open or closed on each day in a schedule
-	 * @param id time slot id 
+	 * update time slots to open or closed on a day for schedule
+	 * @param day the day (YYYY-MM-DD)
+	 * @param schedule_id schedule id 
 	 * @param open state to set it to 
 	 * (open or closed being true or false respectively)
 	 */
-	public boolean updateTimeSlotOnDays(String day, int schedule_id, boolean open) throws Exception {
+	public boolean updateTimeSlotsOnDay(String day, int schedule_id, boolean open) throws Exception {
 		try {
-//			PreparedStatement ps = conn.prepareStatement("UPDATE `time_slots` SET `is_open` = ? WHERE `id` = ?;");
-//			ps.setBoolean(1, open);
-//			ps.setInt(2, id);
-//			int numAltered = ps.executeUpdate();
-//			ps.close();
-			return (false);			
+			PreparedStatement ps = conn.prepareStatement("UPDATE `time_slots` SET `is_open` = ? WHERE `schedule_id` = ? AND `date` = ?;");
+			ps.setBoolean(1, open);
+			ps.setInt(2, schedule_id);
+			ps.setString(3, day);
+			int numAltered = ps.executeUpdate();
+			ps.close();
+			return (numAltered > 0);
 		} catch (Exception e) {
-			throw new Exception("Failed to update time slot: " + e.getMessage());
+			throw new Exception("Failed to update time slots on a specified day: " + e.getMessage());
 		}	
 	}
 	
 	/**
 	 * update a time slot to open or closed on each hour in a schedule
-	 * @param id time slot id 
+	 * @param timeslot the time it starts at
+	 * @param schedule_id schedule id 
 	 * @param open state to set it to 
 	 * (open or closed being true or false respectively)
 	 */
-	public boolean updateTimeSlotOnHours(int hour, int schedule_id, boolean open) throws Exception {
+	public boolean updateTimeSlotOnHours(String timeslot, int schedule_id, boolean open) throws Exception {
 		try {
-//			PreparedStatement ps = conn.prepareStatement("UPDATE `time_slots` SET `is_open` = ? WHERE `id` = ?;");
-//			ps.setBoolean(1, open);
-//			ps.setInt(2, id);
-//			int numAltered = ps.executeUpdate();
-//			ps.close();
-			return (false);			
+			PreparedStatement ps = conn.prepareStatement("UPDATE `time_slots` SET `is_open` = ? WHERE `schedule_id` = ? AND `start_time` = ?;");
+			ps.setBoolean(1, open);
+			ps.setInt(2, schedule_id);
+			ps.setString(3, timeslot);
+			int numAltered = ps.executeUpdate();
+			ps.close();
+			return (numAltered > 0);			
 		} catch (Exception e) {
 			throw new Exception("Failed to update time slot: " + e.getMessage());
 		}	

@@ -32,7 +32,7 @@ public class TimeSlotDAO {
 	 * @throws Exception on SQL failure
 	 */
 	public List<TimeSlot> getTimeSlots(int id, String start_of_week, String end_of_week) throws Exception {
-		List<TimeSlot> timeSlots = new ArrayList<>();
+		ArrayList<TimeSlot> timeSlots = new ArrayList<>();
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(
@@ -57,7 +57,7 @@ public class TimeSlotDAO {
 					}
 				}
 				
-				timeSlots.add(new TimeSlot(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getBoolean(5), m));
+				timeSlots.add(new TimeSlot(rs.getInt(1), rs.getString(3), rs.getString(4), rs.getString(5), rs.getBoolean(6), m));
 			}
 		} catch (Exception e) {
 			throw new Exception("Failed to get time slots: " + e.getMessage());

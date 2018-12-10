@@ -26,7 +26,7 @@ public class ScheduleDAO {
 	 * @param id id of schedule to retrieve 
 	 * @param start_date Start day of week for the weekly schedule to get
 	 */
-	public Schedule getSchedule(int id, String start_date) throws Exception {
+	public Schedule getSchedule(int id) throws Exception {
 		try {
 			Schedule s = null;
 			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id=?;");

@@ -119,43 +119,63 @@ public class GetScheduleHandler implements RequestStreamHandler {
 			
 			// get the schedule
 			if (success) {
-				// get the start day of week (make sure request is for a Monday, or find the Monday)
-				Calendar c = Calendar.getInstance();
-				c.setTime(week_start_date);
-				c.add(Calendar.DAY_OF_MONTH, Calendar.MONDAY - c.get(Calendar.DAY_OF_WEEK));
-				String week_start = dateFormat.format(c.getTime());
-				c.add(Calendar.DAY_OF_MONTH, 4);
-				String week_end = dateFormat.format(c.getTime());
 				
 				ScheduleDAO dao = new ScheduleDAO();
 				Schedule s = null;
 				try {
-					s = dao.getSchedule(request.id, week_start);
+					s = dao.getSchedule(request.id);
 				} catch (Exception e) {
 					e.printStackTrace();
 					response.put("body", new Gson().toJson(new GetScheduleResponse(500, "SQL error getting schedule.")));
 					success = false;
 				}
 
-				TimeSlotDAO ts_dao = new TimeSlotDAO();
-				List<TimeSlot> time_slots = null;
-				try {
-					time_slots = ts_dao.getTimeSlots(request.id, week_start, week_end);
-				} catch (Exception e) {
-					e.printStackTrace();
-					response.put("body", new Gson().toJson(new GetScheduleResponse(500, "SQL error getting time slots.")));
-					success = false;
+				// get the start day of week (make sure request is for a Monday, or find the Monday)
+				Calendar c = Calendar.getInstance();
+				if (success) {
+					try {
+						if (week_start_date.before(dateFormat.parse(s.start_date))) {
+							c.setTime(dateFormat.parse(s.start_date));
+						} else {
+							c.setTime(week_start_date);
+						}
+					} catch (java.text.ParseException e1) {
+						response.put("body", new Gson().toJson(new GetScheduleResponse(500, "Error parsing dates.")));
+						success = false;
+						e1.printStackTrace();
+					}
 				}
 				
-				if (s == null) {
-					responseObj = new GetScheduleResponse(404, "Schedule not found.");
-			        response.put("body", new Gson().toJson(responseObj));	
-				} else if (s != null && time_slots != null) {
-					responseObj = new GetScheduleResponse(s, time_slots, 200);
-			        response.put("body", new Gson().toJson(responseObj));	
-				} else {
-					responseObj = new GetScheduleResponse(500, "Unknown system error.");
-			        response.put("body", new Gson().toJson(responseObj));
+				if (success) {
+					c.add(Calendar.DAY_OF_MONTH, Calendar.MONDAY - c.get(Calendar.DAY_OF_WEEK));
+					String week_start = dateFormat.format(c.getTime());
+					c.add(Calendar.DAY_OF_MONTH, 4);
+					String week_end = dateFormat.format(c.getTime());
+
+					logger.log("determed start and end of week.\n");
+					logger.log("start of week:" + week_start + "\n");
+					logger.log("end of week:" + week_end + "\n");
+
+					TimeSlotDAO ts_dao = new TimeSlotDAO();
+					List<TimeSlot> time_slots = null;
+					try {
+						time_slots = ts_dao.getTimeSlots(request.id, week_start, week_end);
+					} catch (Exception e) {
+						e.printStackTrace();
+						response.put("body", new Gson().toJson(new GetScheduleResponse(500, "SQL error getting time slots.")));
+						success = false;
+					}
+					
+					if (s == null) {
+						responseObj = new GetScheduleResponse(404, "Schedule not found.");
+				        response.put("body", new Gson().toJson(responseObj));	
+					} else if (s != null && time_slots != null) {
+						responseObj = new GetScheduleResponse(s, time_slots, 200);
+				        response.put("body", new Gson().toJson(responseObj));	
+					} else {
+						responseObj = new GetScheduleResponse(500, "Unknown system error.");
+				        response.put("body", new Gson().toJson(responseObj));
+					}
 				}
 			}
 		}

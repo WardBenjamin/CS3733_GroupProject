@@ -3,9 +3,9 @@ package edu.wpi.cs3733.vindemiatrix.model;
 public class TimeSlot {
 	public final int id;
 	public final String date;
-	public final String startTime;
-	public final String endTime;
-	public final boolean isOpen;
+	public final String start_time;
+	public final String end_time;
+	public final boolean is_open;
 	public final Meeting meeting;
 	
 	/**
@@ -21,9 +21,9 @@ public class TimeSlot {
 			boolean isOpen, Meeting meeting) {
 		this.id = id;
 		this.date = date;
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.isOpen = isOpen;
+		this.start_time = startTime;
+		this.end_time = endTime;
+		this.is_open = isOpen;
 		this.meeting = meeting;
 	}
 }

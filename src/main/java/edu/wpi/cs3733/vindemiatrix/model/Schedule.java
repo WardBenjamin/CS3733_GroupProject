@@ -7,11 +7,11 @@ public class Schedule {
 	public final int id;
 	public final String secret_code;
 	public final String name;
-	public final String startDate;
-	public final String endDate;
-	public final String startTime;
-	public final String endTime;
-	public final int meetingDuration;
+	public final String start_date;
+	public final String end_date;
+	public final String start_time;
+	public final String end_time;
+	public final int meeting_duration;
 	
 	ArrayList<TimeSlot> timeSlots;
 	
@@ -30,11 +30,11 @@ public class Schedule {
 		this.id = id;
 		this.secret_code = secret_code;
 		this.name = name;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.meetingDuration = meetingDuration;
+		this.start_date = startDate;
+		this.end_date = endDate;
+		this.start_time = startTime;
+		this.end_time = endTime;
+		this.meeting_duration = meetingDuration;
 	}
 	
 	/**

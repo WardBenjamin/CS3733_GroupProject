@@ -21,9 +21,9 @@ public class UpdateTimeSlotRequest {
 		if (mode.equals("indiv")) {
 			return (time_slot_id == 0);
 		} else if (mode.equals("day")) {
-			return (day == "" || schedule_id == 0);
+			return (day == null || schedule_id == 0);
 		} else if (mode.equals("slot")) {
-			return (timeslot == "" || schedule_id == 0);
+			return (timeslot == null || schedule_id == 0);
 		} else { return true; }
 	}
 	

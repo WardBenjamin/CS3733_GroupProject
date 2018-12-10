@@ -66,7 +66,7 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 		} catch (ParseException pe) {
 			// unable to process input
 			logger.log(pe.toString() + "\n");
-			responseObj = new BasicResponse(422);
+			responseObj = new BasicResponse(422, "Error parsing input.");
 			response.put("body", new Gson().toJson(responseObj));
 	        handled = true;
 		}
@@ -80,25 +80,25 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 			
 			// check if fields are missing
 			if (request.isMissingFields()) {
-				response.put("body", new Gson().toJson(new BasicResponse(400)));
+				response.put("body", new Gson().toJson(new BasicResponse(400, "Missing fields in request.")));
 				success = false;
 				logger.log("Input is missing fields!\n");
 			}
 			
 			if (success) {
 				try {
-					if(dao.deleteMeeting(request.secret_code, request.time_slot_id)) {
-						if (ts_dao.setTimeSlotMeeting(request.time_slot_id, 0)) {
+					if(ts_dao.setTimeSlotMeeting(request.time_slot_id, 0)) {
+						if (dao.deleteMeeting(request.secret_code, request.meeting_id)) {
 							response.put("body", new Gson().toJson(new BasicResponse(200)));
 						} else {
-							response.put("body", new Gson().toJson(new BasicResponse(500)));
+							response.put("body", new Gson().toJson(new BasicResponse(500, "Error deleting meeting.")));
 						}
 					} else {
-						response.put("body", new Gson().toJson(new BasicResponse(500)));
+						response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slot to open.")));
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					response.put("body", new Gson().toJson(new BasicResponse(500)));
+					response.put("body", new Gson().toJson(new BasicResponse(500, "Error with SQL.")));
 				}
 			}
 		}

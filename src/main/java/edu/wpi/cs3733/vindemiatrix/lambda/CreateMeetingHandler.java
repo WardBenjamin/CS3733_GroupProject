@@ -75,21 +75,34 @@ public class CreateMeetingHandler implements RequestStreamHandler {
 		} catch (ParseException pe) {
 			// unable to process input
 			logger.log(pe.toString() + "\n");
-			responseObj = new CreateMeetingResponse(422);
+			responseObj = new CreateMeetingResponse(422, "Error parsing input.");
 			response.put("body", new Gson().toJson(responseObj));
 	        handled = true;
 		}
 
 		if (!handled) {
-			Boolean success = true; 
+			boolean success = true; 
 			CreateMeetingRequest request = new Gson().fromJson(body, CreateMeetingRequest.class);
 			logger.log(request.toString() + "\n");
 			
 			// check if fields are missing
 			if (request.isMissingFields()) {
-				response.put("body", new Gson().toJson(new CreateMeetingResponse(400)));
+				response.put("body", new Gson().toJson(new CreateMeetingResponse(400, "Input is missing fields.")));
 				success = false;
 				logger.log("Input is missing fields!\n");
+			}
+			
+			TimeSlotDAO ts_dao = new TimeSlotDAO();
+			
+			try {
+				if (ts_dao.timeSlotHasMeeting(request.time_slot_id)) {
+					response.put("body", new Gson().toJson(new CreateMeetingResponse(400, "Time slot is already occupied.")));
+					success = false;
+				}
+			} catch (Exception e) {
+				response.put("body", new Gson().toJson(new CreateMeetingResponse(500, "SQL error checking if time slot has a meeting.")));
+				success = false;
+				e.printStackTrace();
 			}
 
 			if (success) {
@@ -97,7 +110,7 @@ public class CreateMeetingHandler implements RequestStreamHandler {
 				if (m != null) {
 					response.put("body", new Gson().toJson(new CreateMeetingResponse(m.id, m.name, m.secret_code, 200)));
 				} else {
-					response.put("body", new Gson().toJson(new CreateMeetingResponse(500)));
+					response.put("body", new Gson().toJson(new CreateMeetingResponse(500, "SQL error creating meeting.")));
 				}
 			}
 		}

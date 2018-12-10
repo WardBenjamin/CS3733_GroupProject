@@ -61,7 +61,7 @@ public class MeetingDAO {
 	 */
 	public boolean deleteMeeting(String secretCode, int id) throws Exception{
 		try {
-			PreparedStatement ps = conn.prepareStatement("DELETE FROM `meetings` (`secret_code`, `id`) values(?,?);");
+			PreparedStatement ps = conn.prepareStatement("DELETE FROM `meetings` WHERE `secret_code` = ? AND `id` = ?;");
 			ps.setString(1, secretCode);
 			ps.setInt(2, id);
 			int numAltered = ps.executeUpdate();

@@ -6,6 +6,7 @@ import edu.wpi.cs3733.vindemiatrix.model.Schedule;
 public class CreateScheduleResponse {
 	public final String name;
 	public final int httpCode;
+	public final String error;
 
 	public final int id;
 	public final String secret_code;
@@ -22,6 +23,7 @@ public class CreateScheduleResponse {
 		this.name = name;
 		this.secret_code = secret_code;
 		this.httpCode = httpCode;
+		this.error = "";
 		
 		this.start_date = req.start_date;
 		this.end_date = req.end_date;
@@ -46,6 +48,23 @@ public class CreateScheduleResponse {
 		this.timeSlotsPerDay = 0;
 		
 		this.httpCode = httpCode;
+		this.error = "";
+	}
+	
+	public CreateScheduleResponse(int httpCode, String error) {
+		this.name = "";
+		this.secret_code = "";
+		this.start_date = "";
+		this.end_date = "";
+		this.start_time = "";
+		this.end_time = "";
+		this.meeting_duration = 0;
+		this.id = 0;
+		this.days = 0;
+		this.timeSlotsPerDay = 0;
+		
+		this.httpCode = httpCode;
+		this.error = error;
 	}
 	
 	public String toString() {

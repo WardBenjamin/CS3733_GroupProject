@@ -72,7 +72,7 @@ public class DeleteScheduleHandler implements RequestStreamHandler {
 		} catch (ParseException pe) {
 			// unable to process input
 			logger.log(pe.toString() + "\n");
-			responseObj = new BasicResponse(422);
+			responseObj = new BasicResponse(422, "Error parsing input.");
 			response.put("body", new Gson().toJson(responseObj));
 	        handled = true;
 		}
@@ -87,7 +87,7 @@ public class DeleteScheduleHandler implements RequestStreamHandler {
 			
 			// check inputs
 			if (request.isMissingFields()) {
-				response.put("body", new Gson().toJson(new BasicResponse(400)));
+				response.put("body", new Gson().toJson(new BasicResponse(400, "Input is missing fields.")));
 				success = false;
 				logger.log("Input is missing fields!\n");
 			}
@@ -99,7 +99,7 @@ public class DeleteScheduleHandler implements RequestStreamHandler {
 					authorized = dao.isAuthorized(request.id, request.secret_code);
 				} catch (Exception e) {
 					e.printStackTrace();
-					response.put("body", new Gson().toJson(new BasicResponse(500)));
+					response.put("body", new Gson().toJson(new BasicResponse(500, "SQL error while checking if correct secret code.")));
 					success = false;
 				}
 			}
@@ -111,7 +111,7 @@ public class DeleteScheduleHandler implements RequestStreamHandler {
 					ts_dao.deleteTimeSlots(request.id);
 				} catch (Exception e) {
 					e.printStackTrace();
-					response.put("body", new Gson().toJson(new BasicResponse(500)));
+					response.put("body", new Gson().toJson(new BasicResponse(500, "SQL error while deleting time slots.")));
 					success = false;
 				}
 			}
@@ -122,26 +122,26 @@ public class DeleteScheduleHandler implements RequestStreamHandler {
 					deletedSchedule = dao.deleteSchedule(request.id);
 				} catch (Exception e) {
 					e.printStackTrace();
-					response.put("body", new Gson().toJson(new BasicResponse(500)));
+					response.put("body", new Gson().toJson(new BasicResponse(500, "SQL error while deleting schedule.")));
 					success = false;
 				}
 			}
 			
 			// generate final response
 			if (success && authorized != 1 && deletedSchedule == false) {
-				responseObj = new BasicResponse(404);
+				responseObj = new BasicResponse(404, "Schedule not found.");
 		        response.put("body", new Gson().toJson(responseObj));	
 			} else if (success && authorized == 0) {
 				responseObj = new BasicResponse(200);
 		        response.put("body", new Gson().toJson(responseObj));	
 			} else if (authorized == 1) {
-				responseObj = new BasicResponse(401);
+				responseObj = new BasicResponse(401, "Invalid secret code.");
 		        response.put("body", new Gson().toJson(responseObj));
 			} else if (authorized == 2) {
-				responseObj = new BasicResponse(403);
+				responseObj = new BasicResponse(403, "Incorrect secret code.");
 		        response.put("body", new Gson().toJson(responseObj));
 			} else {
-				responseObj = new BasicResponse(500);
+				responseObj = new BasicResponse(500, "Unknown system error.");
 		        response.put("body", new Gson().toJson(responseObj));
 			}
 		}

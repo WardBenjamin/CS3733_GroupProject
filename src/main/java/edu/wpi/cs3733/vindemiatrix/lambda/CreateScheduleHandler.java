@@ -73,7 +73,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 		} catch (ParseException pe) {
 			// unable to process input
 			logger.log(pe.toString() + "\n");
-			responseObj = new CreateScheduleResponse(422);
+			responseObj = new CreateScheduleResponse(422, "Error parsing input.");
 			response.put("body", new Gson().toJson(responseObj));
 	        handled = true;
 		}
@@ -85,7 +85,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			
 			// check inputs
 			if (request.isMissingFields()) {
-				response.put("body", new Gson().toJson(new CreateScheduleResponse(400)));
+				response.put("body", new Gson().toJson(new CreateScheduleResponse(400, "Input is missing fields.")));
 				success = false;
 				logger.log("Input is missing fields!\n");
 			}
@@ -111,6 +111,8 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 					
 					logger.log("Parsed dates and times successfully.\n");
 				} catch (java.text.ParseException e) {
+					responseObj = new CreateScheduleResponse(400, "Error parsing dates/times.");
+			        response.put("body", new Gson().toJson(responseObj));
 					success = false;
 					e.printStackTrace();
 				}
@@ -131,7 +133,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				success &= time1.getTime() < time2.getTime();
 				
 				if (success == false) {
-					responseObj = new CreateScheduleResponse(400);
+					responseObj = new CreateScheduleResponse(400, "Start date must be in the future and must be before end date. Start time must be before end time.");
 			        response.put("body", new Gson().toJson(responseObj));
 				}
 			}
@@ -184,11 +186,11 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 					} catch (Exception e) {
 						logger.log("Failed to create time slots.\n");
 						e.printStackTrace();
-						responseObj = new CreateScheduleResponse(500);
+						responseObj = new CreateScheduleResponse(500, "Error creating time slots.");
 				        response.put("body", new Gson().toJson(responseObj));
 					}
 				} else {
-					responseObj = new CreateScheduleResponse(500);
+					responseObj = new CreateScheduleResponse(500, "Error creating schedule.");
 			        response.put("body", new Gson().toJson(responseObj));
 				}
 			}

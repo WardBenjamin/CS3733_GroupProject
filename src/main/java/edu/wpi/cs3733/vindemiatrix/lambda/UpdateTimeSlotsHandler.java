@@ -65,7 +65,7 @@ public class UpdateTimeSlotsHandler implements RequestStreamHandler {
 		} catch (ParseException pe) {
 			// unable to process input
 			logger.log(pe.toString() + "\n");
-			responseObj = new BasicResponse(422);
+			responseObj = new BasicResponse(422, "Error processing input.");
 			response.put("body", new Gson().toJson(responseObj));
 	        handled = true;
 		}
@@ -77,7 +77,7 @@ public class UpdateTimeSlotsHandler implements RequestStreamHandler {
 			
 			// check if fields are missing
 			if (request.isMissingFields()) {
-				response.put("body", new Gson().toJson(new BasicResponse(400)));
+				response.put("body", new Gson().toJson(new BasicResponse(400, "Request is missing fields.")));
 				success = false;
 				logger.log("Input is missing fields!\n");
 			}
@@ -91,26 +91,26 @@ public class UpdateTimeSlotsHandler implements RequestStreamHandler {
 							if (ts_dao.updateTimeSlot(request.time_slot_id, request.open == 1)) {
 								response.put("body", new Gson().toJson(new BasicResponse(200)));
 							} else {
-								response.put("body", new Gson().toJson(new BasicResponse(500)));
+								response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slot.")));
 							}
 							break;
 						case "day":
 							if (ts_dao.updateTimeSlotsOnDay(request.day, request.schedule_id, request.open == 1)) {
 								response.put("body", new Gson().toJson(new BasicResponse(200)));
 							} else {
-								response.put("body", new Gson().toJson(new BasicResponse(500)));
+								response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slots.")));
 							}
 							break;
 						case "slot":
 							if (ts_dao.updateTimeSlotOnHours(request.timeslot, request.schedule_id, request.open == 1)) {
 								response.put("body", new Gson().toJson(new BasicResponse(200)));
 							} else {
-								response.put("body", new Gson().toJson(new BasicResponse(500)));
+								response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slots.")));
 							}
 							break;
 					}
 				} catch (Exception e) {
-					response.put("body", new Gson().toJson(new BasicResponse(512)));
+					response.put("body", new Gson().toJson(new BasicResponse(500, "Error with SQL queries.")));
 					e.printStackTrace();
 				}
 			}

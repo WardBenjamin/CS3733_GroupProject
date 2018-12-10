@@ -79,7 +79,7 @@ public class GetScheduleHandler implements RequestStreamHandler {
 		} catch (ParseException pe) {
 			// unable to process input
 			logger.log(pe.toString() + "\n");
-			responseObj = new GetScheduleResponse(422);
+			responseObj = new GetScheduleResponse(422, "Error processing input.");
 			response.put("body", new Gson().toJson(responseObj));
 	        handled = true;
 		}
@@ -98,7 +98,7 @@ public class GetScheduleHandler implements RequestStreamHandler {
 			
 			// check inputs
 			if (request.isMissingFields()) {
-				response.put("body", new Gson().toJson(new GetScheduleResponse(400)));
+				response.put("body", new Gson().toJson(new GetScheduleResponse(400, "Input is missing fields.")));
 				success = false;
 				logger.log("Input is missing fields!\n");
 			}
@@ -111,7 +111,7 @@ public class GetScheduleHandler implements RequestStreamHandler {
 					week_start_date = dateFormat.parse(request.week_start_date);
 					logger.log("Parsed start date successfully.\n");
 				} catch (java.text.ParseException e) {
-					response.put("body", new Gson().toJson(new GetScheduleResponse(400)));
+					response.put("body", new Gson().toJson(new GetScheduleResponse(400, "Error parsing start date.")));
 					success = false;
 					e.printStackTrace();
 				}
@@ -133,7 +133,7 @@ public class GetScheduleHandler implements RequestStreamHandler {
 					s = dao.getSchedule(request.id, week_start);
 				} catch (Exception e) {
 					e.printStackTrace();
-					response.put("body", new Gson().toJson(new GetScheduleResponse(500)));
+					response.put("body", new Gson().toJson(new GetScheduleResponse(500, "SQL error getting schedule.")));
 					success = false;
 				}
 
@@ -143,18 +143,18 @@ public class GetScheduleHandler implements RequestStreamHandler {
 					time_slots = ts_dao.getTimeSlots(request.id, week_start, week_end);
 				} catch (Exception e) {
 					e.printStackTrace();
-					response.put("body", new Gson().toJson(new GetScheduleResponse(500)));
+					response.put("body", new Gson().toJson(new GetScheduleResponse(500, "SQL error getting time slots.")));
 					success = false;
 				}
 				
 				if (s == null) {
-					responseObj = new GetScheduleResponse(404);
+					responseObj = new GetScheduleResponse(404, "Schedule not found.");
 			        response.put("body", new Gson().toJson(responseObj));	
 				} else if (s != null && time_slots != null) {
 					responseObj = new GetScheduleResponse(s, time_slots, 200);
 			        response.put("body", new Gson().toJson(responseObj));	
 				} else {
-					responseObj = new GetScheduleResponse(500);
+					responseObj = new GetScheduleResponse(500, "Unknown system error.");
 			        response.put("body", new Gson().toJson(responseObj));
 				}
 			}

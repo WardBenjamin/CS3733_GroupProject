@@ -1,10 +1,12 @@
 console.log("Loaded schedule creation plugin");
 
+var js;
+
 function processCreateResponse(result) {
     // Can grab any DIV or SPAN HTML element and can then manipulate its
     // contents dynamically via javascript
     console.log("Create response result: " + result);
-    var js = JSON.parse(result);
+    js = JSON.parse(result);
 
     var httpResult = js["httpCode"];
 
@@ -17,11 +19,11 @@ function processCreateResponse(result) {
 
         alert("Secret Code: " + js["secret_code"]);
 
-        sessionStorage.schedule = result;
-
         console.log("Current location: " + location.href);
 
-        location.href = html_schedule_view;
+        alert(js["id"]);
+
+        location.href = html_schedule_view_url + "#" + js["id"];
     } else {
         // TODO: show red alert
         sessionStorage.schedule = null;
@@ -38,6 +40,7 @@ function handleCreateClick(e) {
     var startTime = form.startTime.value;
     var endTime = form.endTime.value;
     var meetingDuration = form.meetingDuration.value;
+    var defaultOpen = form.defaultState.value;
 
     console.log("Start date: " + startDate);
 
@@ -72,12 +75,13 @@ function handleCreateClick(e) {
     data["start_time"] = time12hTo24h(startTime);
     data["end_time"] = time12hTo24h(endTime);
     data["meeting_duration"] = meetingDuration;
+    data["default_open"] = defaultOpen;
 
     var js = JSON.stringify(data);
     console.log("JS:" + js);
 
     var xhr = new XMLHttpRequest();
-    xhr.open("PUT", schedule_url, true);
+    xhr.open("PUT", api_schedule_url, true);
 
     // Send the collected data as JSON
     xhr.send(js);

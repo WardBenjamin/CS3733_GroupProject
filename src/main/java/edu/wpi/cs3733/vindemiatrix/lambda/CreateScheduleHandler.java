@@ -145,10 +145,18 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				long minutes = seconds / 60;
 				
 				timeSlotsPerDay = (int) minutes / request.meeting_duration;
+				Calendar c = Calendar.getInstance();
+				c.setTime(date1);
+				int day_start = c.get(Calendar.DAY_OF_YEAR);
+				c.setTime(date2);
+				int day_end = c.get(Calendar.DAY_OF_YEAR);
 				
-				long dateDifference = date2.getTime() - date1.getTime();
+				days = Math.abs(day_end - day_start);
+				
+//				if (days > 5) { days--; }
+				
 				// ms -> sec -> min -> hr -> day)
-				days = (int) (dateDifference / 1000 / 60 / 60 / 24);		
+//				days = (int) (dateDifference / 1000 / 60 / 60 / 24);
 				
 				logger.log("Determined start and end dates and times, creating schedule...\n");
 
@@ -157,9 +165,9 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 						request.start_time + ":00", request.end_time + ":00", request.meeting_duration);
 				if (s != null) {
 					logger.log("Created schedule. Now creating time slots...\n");
-					TimeSlot[] time_slots = new TimeSlot[(int) (days * timeSlotsPerDay)];
+					TimeSlot[] time_slots = new TimeSlot[(int) ((days) * timeSlotsPerDay)];
 					TimeSlotDAO ts_dao = new TimeSlotDAO();
-					Calendar c = Calendar.getInstance();
+					c = Calendar.getInstance();
 					
 					try {
 						c.setTime(fullFormat.parse(request.start_date + " " + request.start_time));

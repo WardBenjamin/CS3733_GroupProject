@@ -26,7 +26,7 @@ public class ScheduleDAO {
 	 * @param id id of schedule to retrieve 
 	 * @param start_date Start day of week for the weekly schedule to get
 	 */
-	public Schedule getSchedule(int id, String start_date) throws Exception {
+	public Schedule getSchedule(int id) throws Exception {
 		try {
 			Schedule s = null;
 			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id=?;");
@@ -145,19 +145,23 @@ public class ScheduleDAO {
 		}
 		
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id = ?;");
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE `id` = ?;");
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
 			
-			if (rs.next() && rs.getString(2).equals(secretCode)) {
-				ps.close();
-				return 0;
+			if (rs.next()) {
+				System.out.println(rs.getString(2));
+				System.out.println(secretCode);
+				if (rs.getString(2).equals(secretCode)) {
+					ps.close();
+					return 0;
+				}
 			}
 			
 			ps.close();
 			return 2;
 		} catch (Exception e) {
-			throw new Exception("Failed to delete schedule: " + e.getMessage());
+			throw new Exception("Failed to check meeting authorization: " + e.getMessage());
 		}
 	}
 

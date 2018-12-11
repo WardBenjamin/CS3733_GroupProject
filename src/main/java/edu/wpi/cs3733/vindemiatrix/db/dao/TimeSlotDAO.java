@@ -32,7 +32,7 @@ public class TimeSlotDAO {
 	 * @throws Exception on SQL failure
 	 */
 	public List<TimeSlot> getTimeSlots(int id, String start_of_week, String end_of_week) throws Exception {
-		List<TimeSlot> timeSlots = new ArrayList<>();
+		ArrayList<TimeSlot> timeSlots = new ArrayList<>();
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(
@@ -48,16 +48,16 @@ public class TimeSlotDAO {
 				int mid = 0;
 				Meeting m = null;
 				
-				if ((mid = rs.getInt(6)) != 0) {
+				if ((mid = rs.getInt(7)) != 0) {
 					PreparedStatement meeting_query = conn.prepareStatement("SELECT * FROM `meetings` WHERE `id` = ?");
 					meeting_query.setInt(1, mid);
 					ResultSet meeting_rs = meeting_query.executeQuery();
 					if (meeting_rs.next()) {
-						m = new Meeting(meeting_rs.getInt(1), meeting_rs.getString(3), "");
+						m = new Meeting(meeting_rs.getInt(1), "", meeting_rs.getString(3));
 					}
 				}
 				
-				timeSlots.add(new TimeSlot(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getBoolean(5), m));
+				timeSlots.add(new TimeSlot(rs.getInt(1), rs.getString(3), rs.getString(4), rs.getString(5), rs.getBoolean(6), m));
 			}
 		} catch (Exception e) {
 			throw new Exception("Failed to get time slots: " + e.getMessage());
@@ -155,10 +155,10 @@ public class TimeSlotDAO {
 	 * @param open state to set it to 
 	 * (open or closed being true or false respectively)
 	 */
-	public boolean updateTimeSlot(int id, boolean open) throws Exception {
+	public boolean updateTimeSlot(int id,int open) throws Exception {
 		try {
 			PreparedStatement ps = conn.prepareStatement("UPDATE `time_slots` SET `is_open` = ? WHERE `id` = ?;");
-			ps.setBoolean(1, open);
+			ps.setInt(1, open);
 			ps.setInt(2, id);
 			int numAltered = ps.executeUpdate();
 			ps.close();

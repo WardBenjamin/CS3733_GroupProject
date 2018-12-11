@@ -85,6 +85,24 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 				logger.log("Input is missing fields!\n");
 			}
 			
+			// check permission
+			if (success) {
+				try {
+					int authorized = dao.isAuthorized(request.meeting_id, request.secret_code);
+					
+					if (authorized == 1) {
+						response.put("body", new Gson().toJson(new BasicResponse(401, "Invalid secret code.")));
+						success = false;
+					} else if (authorized == 2) {
+						response.put("body", new Gson().toJson(new BasicResponse(403, "Incorrect secret code.")));
+						success = false;
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
 			if (success) {
 				try {
 					if(ts_dao.setTimeSlotMeeting(request.time_slot_id, 0)) {

@@ -153,7 +153,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				
 				days = Math.abs(day_end - day_start);
 				
-//				if (days < 5) { days++; }
+//				if (days > 5) { days--; }
 				
 				// ms -> sec -> min -> hr -> day)
 //				days = (int) (dateDifference / 1000 / 60 / 60 / 24);

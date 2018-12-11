@@ -16,6 +16,7 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.Gson;
 
+import edu.wpi.cs3733.vindemiatrix.db.dao.ScheduleDAO;
 import edu.wpi.cs3733.vindemiatrix.db.dao.TimeSlotDAO;
 import edu.wpi.cs3733.vindemiatrix.lambda.request.UpdateTimeSlotRequest;
 import edu.wpi.cs3733.vindemiatrix.lambda.response.BasicResponse;
@@ -82,16 +83,39 @@ public class UpdateTimeSlotsHandler implements RequestStreamHandler {
 				logger.log("Input is missing fields!\n");
 			}
 			
+			ScheduleDAO dao = new ScheduleDAO();
 			TimeSlotDAO ts_dao = new TimeSlotDAO();
+			
+			if (success) {
+				try {
+					int authorized = dao.isAuthorized(request.schedule_id, request.secret_code);
+					
+					if (authorized == 1) {
+						response.put("body", new Gson().toJson(new BasicResponse(401, "Invalid secret code.")));
+						success = false;
+					} else if (authorized == 2) {
+						response.put("body", new Gson().toJson(new BasicResponse(403, "Incorrect secret code.")));
+						success = false;
+					}
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					response.put("body", new Gson().toJson(new BasicResponse(500, "SQL error checking secret code.")));
+					success = false;
+				}
+			}
 			
 			if (success) {
 				try {
 					switch (request.mode) {
 						case "indiv":
-							if (ts_dao.updateTimeSlot(request.time_slot_id, request.open == 1)) {
-								response.put("body", new Gson().toJson(new BasicResponse(200)));
+							if (ts_dao.timeSlotHasMeeting(request.time_slot_id)) {
+								response.put("body", new Gson().toJson(new BasicResponse(409, "Slot cannot be closed as there is a meeting in it.")));
 							} else {
-								response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slot.")));
+								if (ts_dao.updateTimeSlot(request.time_slot_id, request.open)) {
+									response.put("body", new Gson().toJson(new BasicResponse(200)));
+								} else {
+									response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slot.")));
+								}
 							}
 							break;
 						case "day":

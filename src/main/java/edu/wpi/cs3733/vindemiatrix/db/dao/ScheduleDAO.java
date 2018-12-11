@@ -145,19 +145,23 @@ public class ScheduleDAO {
 		}
 		
 		try {
-			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id = ?;");
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE `id` = ?;");
 			ps.setInt(1, id);
 			ResultSet rs = ps.executeQuery();
 			
-			if (rs.next() && rs.getString(2).equals(secretCode)) {
-				ps.close();
-				return 0;
+			if (rs.next()) {
+				System.out.println(rs.getString(2));
+				System.out.println(secretCode);
+				if (rs.getString(2).equals(secretCode)) {
+					ps.close();
+					return 0;
+				}
 			}
 			
 			ps.close();
 			return 2;
 		} catch (Exception e) {
-			throw new Exception("Failed to delete schedule: " + e.getMessage());
+			throw new Exception("Failed to check meeting authorization: " + e.getMessage());
 		}
 	}
 

@@ -149,7 +149,7 @@ public class GetScheduleHandler implements RequestStreamHandler {
 				if (success) {
 					c.add(Calendar.DAY_OF_MONTH, Calendar.MONDAY - c.get(Calendar.DAY_OF_WEEK));
 					String week_start = dateFormat.format(c.getTime());
-					c.add(Calendar.DAY_OF_MONTH, 4);
+					c.add(Calendar.DAY_OF_MONTH, 7);
 					String week_end = dateFormat.format(c.getTime());
 
 					logger.log("determed start and end of week.\n");

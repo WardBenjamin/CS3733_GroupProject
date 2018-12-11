@@ -48,12 +48,12 @@ public class TimeSlotDAO {
 				int mid = 0;
 				Meeting m = null;
 				
-				if ((mid = rs.getInt(6)) != 0) {
+				if ((mid = rs.getInt(7)) != 0) {
 					PreparedStatement meeting_query = conn.prepareStatement("SELECT * FROM `meetings` WHERE `id` = ?");
 					meeting_query.setInt(1, mid);
 					ResultSet meeting_rs = meeting_query.executeQuery();
 					if (meeting_rs.next()) {
-						m = new Meeting(meeting_rs.getInt(1), meeting_rs.getString(3), "");
+						m = new Meeting(meeting_rs.getInt(1), "", meeting_rs.getString(3));
 					}
 				}
 				
@@ -155,10 +155,10 @@ public class TimeSlotDAO {
 	 * @param open state to set it to 
 	 * (open or closed being true or false respectively)
 	 */
-	public boolean updateTimeSlot(int id, boolean open) throws Exception {
+	public boolean updateTimeSlot(int id,int open) throws Exception {
 		try {
 			PreparedStatement ps = conn.prepareStatement("UPDATE `time_slots` SET `is_open` = ? WHERE `id` = ?;");
-			ps.setBoolean(1, open);
+			ps.setInt(1, open);
 			ps.setInt(2, id);
 			int numAltered = ps.executeUpdate();
 			ps.close();

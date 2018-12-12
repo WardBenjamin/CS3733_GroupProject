@@ -13,3 +13,8 @@ html, body {
     position: absolute;
     right: 0;
 }
+
+.anchor-bottom {
+    position: absolute;
+    bottom: 10px;
+}

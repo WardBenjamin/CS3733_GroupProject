@@ -48,61 +48,100 @@ function sendTimeSlotUpdate(data, success_callback, fail_callback) {
     }).done(success_callback).fail(fail_callback);
 }
 
-function closeTimeSlot(timeSlot) {
-    console.log("Closing time slot: " + timeSlot.id
+function openDay(date) {
+    setDay(date, 1);
+}
+
+function closeDay(date) {
+    setDay(date, 0);
+}
+
+function setDay(date, should_be_open) {
+    console.log((should_be_open === 1 ? "Opening" : "Closing") + " time slots on date: " + date
         + " in schedule: " + $("#schedule_table").data().id
         + " with secret code: " + $("#secret_code").val()
     );
 
     sendTimeSlotUpdate(
         {
-            mode: "indiv", time_slot_id: timeSlot.id, open: 0, secret_code: $("#secret_code").val(),
+            mode: "day", day: date, open: should_be_open, secret_code: $("#secret_code").val(),
             schedule_id: $("#schedule_table").data().id
         },
         function (data) {
             if (parseInt(data.httpCode) !== 200) {
-                console.log("Failed to close time slot: " + timeSlot.id + "; " + data.error);
+                console.log("Failed to " + (should_be_open ? "open" : "close") + "  time slots on day: " + date + "; " + data.error);
                 alert(data.error);
             } else {
-                console.log("Successfully closed time slot: " + timeSlot.id)
+                console.log("Successfully " + (should_be_open ? "opened" : "closed") + " time slots on day: " + date);
+                setTimeout(regenerateSchedule, 1000);
             }
         },
         function () {
-            console.log("Failed to close time slot: " + timeSlot.id)
+            console.log("Failed to " + (should_be_open ? "open" : "close") + " time slots on day: " + date);
         }
     )
 }
 
-function openTimeSlot(timeSlot) {
-    console.log("Opening time slot: " + timeSlot.id
+function openTime(time) {
+    setTime(time, 1);
+}
+
+function closeTime(time) {
+    setTime(time, 0);
+}
+
+function setTime(time, should_be_open) {
+    console.log((should_be_open === 1 ? "Opening" : "Closing") + " time slots at time: " + time
         + " in schedule: " + $("#schedule_table").data().id
         + " with secret code: " + $("#secret_code").val()
     );
 
     sendTimeSlotUpdate(
         {
-            mode: "indiv", time_slot_id: timeSlot.id, open: 1, secret_code: $("#secret_code").val(),
+            mode: "slot", timeslot: time, open: should_be_open, secret_code: $("#secret_code").val(),
             schedule_id: $("#schedule_table").data().id
         },
         function (data) {
             if (parseInt(data.httpCode) !== 200) {
-                console.log("Failed to open time slot: " + timeSlot.id + "; " + data.error);
+                console.log("Failed to " + (should_be_open ? "open" : "close") + "  time slots at time: " + time + "; " + data.error);
                 alert(data.error);
             } else {
-                console.log("Successfully opened time slot: " + timeSlot.id)
+                console.log("Successfully " + (should_be_open ? "opened" : "closed") + " time slots at time: " + time);
+                setTimeout(regenerateSchedule, 1000);
             }
         },
         function () {
-            console.log("Failed to open time slot: " + timeSlot.id)
+            console.log("Failed to " + (should_be_open ? "open" : "close") + " time slots at time: " + time);
         }
     )
 }
 
 function toggleTimeSlot(timeSlot) {
     console.log("Toggling time slot: " + timeSlot.id);
-    if (timeSlot.is_open)
-        closeTimeSlot(timeSlot);
-    else
-        openTimeSlot(timeSlot);
-    setTimeout(regenerateSchedule, 2000);
+    let should_be_open = timeSlot.is_open ? 0 : 1;
+
+    console.log((should_be_open === 1 ? "Opening" : "Closing") + " time slot: " + timeSlot.id
+        + " in schedule: " + $("#schedule_table").data().id
+        + " with secret code: " + $("#secret_code").val()
+    );
+
+    sendTimeSlotUpdate(
+        {
+            mode: "indiv", time_slot_id: timeSlot.id, open: should_be_open, secret_code: $("#secret_code").val(),
+            schedule_id: $("#schedule_table").data().id
+        },
+        function (data) {
+            if (parseInt(data.httpCode) !== 200) {
+                console.log("Failed to " + (should_be_open === 1 ? "open" : "close") + "  time slot: " + timeSlot.id + "; " + data.error);
+                alert(data.error);
+            } else {
+                console.log("Successfully " + (should_be_open === 1? "opened" : "closed") + " time slot: " + timeSlot.id);
+                setTimeout(regenerateSchedule, 1000);
+            }
+        },
+        function () {
+            console.log("Failed to " + (should_be_open === 1 ? "open" : "close") + " time slot: " + timeSlot.id)
+        }
+    )
+
 }

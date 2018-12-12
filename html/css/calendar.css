@@ -21,6 +21,10 @@ body {
     position: relative;
 }
 
+.Rtable-cell-tall {
+    padding-bottom: 3.4em;
+}
+
 .Rtable-cell button {
     margin-right: 7px;
 }
@@ -52,3 +56,13 @@ body {
 .Rtable--6cols > .Rtable-cell {
     width: 16.6%;
 }
+
+.edit-item {}
+
+.open-day {}
+
+.close-day {}
+
+.open-time {}
+
+.close-time {}

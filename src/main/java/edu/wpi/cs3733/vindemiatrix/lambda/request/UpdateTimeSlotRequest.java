@@ -21,11 +21,11 @@ public class UpdateTimeSlotRequest {
 	
 	public boolean isMissingFields() {
 		if (mode.equals("indiv")) {
-			return (time_slot_id == 0);
+			return (time_slot_id == 0 || schedule_id == 0);
 		} else if (mode.equals("day")) {
-			return (day == null);
+			return (day == null || schedule_id == 0);
 		} else if (mode.equals("slot")) {
-			return (timeslot == null);
+			return (timeslot == null || schedule_id == 0);
 		} else { return true; }
 	}
 	

@@ -1,7 +1,14 @@
 package edu.wpi.cs3733.vindemiatrix.db.dao;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -21,10 +28,9 @@ public class ScheduleDAO {
 		}
 	}
 	
-	/*
+	/**
 	 * Gets a schedule and all associated time slots within the week
 	 * @param id id of schedule to retrieve 
-	 * @param start_date Start day of week for the weekly schedule to get
 	 */
 	public Schedule getSchedule(int id) throws Exception {
 		try {
@@ -41,6 +47,49 @@ public class ScheduleDAO {
 			result.close();
 			ps.close();
 			return s; 
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception("Failed to get schedule: " + e.getMessage()) ; 
+		}
+	}
+
+	
+	/**
+	 * Gets the number of weeks in a schedule
+	 * @param id id of schedule to check 
+	 * @return the number of weeks or 0 on failure
+	 */
+	public int getNumWeeks(int id) throws Exception {
+		try {
+			Schedule s = null;
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE id=?;");
+			ps.setInt(1, id);
+			ResultSet result = ps.executeQuery();
+			
+			if (result.next()) {
+				s = new Schedule(id, "", result.getString(3), result.getString(4), 
+						result.getString(5), result.getString(6), result.getString(7), result.getInt(8));
+				
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+				
+				java.util.Date d = dateFormat.parse(s.end_date);
+			    Calendar cal = new GregorianCalendar();
+			    cal.setTime(dateFormat.parse(s.start_date));
+			    
+			    int weeks = 0;
+			    while (cal.getTime().before(d)) {
+			        cal.add(Calendar.WEEK_OF_YEAR, 1);
+			        weeks++;
+			    }
+
+				result.close();
+				ps.close();
+				return weeks; 
+			} else { 
+				result.close();
+				ps.close();
+				return 0;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("Failed to get schedule: " + e.getMessage()) ; 

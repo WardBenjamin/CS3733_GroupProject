@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
 import edu.wpi.cs3733.vindemiatrix.model.Meeting;
@@ -292,5 +294,48 @@ public class TimeSlotDAO {
 		}
 		
 		return success;
+	}
+	
+	/**
+	 * check if the secret code given is the code for the given time slot
+	 * @param id the time slot ID
+	 * @param secretCode the schedule secret code
+	 * @return 0 if good, 1 if invalid form, 2 if incorrect code
+	 * @throws Exception on SQL failure
+	 */
+	public int isAuthorized(int id, String secretCode) throws Exception {
+		Pattern p = Pattern.compile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+		Matcher m = p.matcher(secretCode);
+		
+		if (!m.find()) { return 1; }
+		
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `time_slots` WHERE `id` = ?;");
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			
+			if (rs.next()) {
+				int schedule_id = rs.getInt(2);
+				ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE `id` = ?;");
+				ps.setInt(1, schedule_id);
+				rs.close();
+				rs = ps.executeQuery();
+				
+				if (rs.next()) {
+					System.out.println(rs.getString(2));
+					System.out.println(secretCode);
+					if (rs.getString(2).equals(secretCode)) {
+						rs.close();
+						ps.close();
+						return 0;
+					}
+				}
+			}
+			
+			ps.close();
+			return 2;
+		} catch (Exception e) {
+			throw new Exception("Failed to check meeting authorization: " + e.getMessage());
+		}
 	}
 }

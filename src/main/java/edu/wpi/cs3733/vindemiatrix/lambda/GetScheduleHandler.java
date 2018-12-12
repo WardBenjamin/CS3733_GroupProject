@@ -119,11 +119,12 @@ public class GetScheduleHandler implements RequestStreamHandler {
 			
 			// get the schedule
 			if (success) {
-				
 				ScheduleDAO dao = new ScheduleDAO();
 				Schedule s = null;
+				int num_weeks = 0;
 				try {
 					s = dao.getSchedule(request.id);
+					num_weeks = dao.getNumWeeks(request.id);
 				} catch (Exception e) {
 					e.printStackTrace();
 					response.put("body", new Gson().toJson(new GetScheduleResponse(500, "SQL error getting schedule.")));
@@ -170,15 +171,15 @@ public class GetScheduleHandler implements RequestStreamHandler {
 						responseObj = new GetScheduleResponse(404, "Schedule not found.");
 				        response.put("body", new Gson().toJson(responseObj));	
 					} else if (s != null && time_slots != null) {
-						SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+						SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
 						long timeDifference = 0;
 						try {
-							timeDifference = timeFormat.parse(s.start_time).getTime() - timeFormat.parse(s.start_time).getTime();
+							timeDifference = timeFormat.parse(s.end_time).getTime() - timeFormat.parse(s.start_time).getTime();
 						} catch (java.text.ParseException e) { e.printStackTrace(); }
 						long seconds = timeDifference / 1000;
 						long minutes = seconds / 60;
 						
-						responseObj = new GetScheduleResponse(s, time_slots, (int) minutes / s.meeting_duration, 200);
+						responseObj = new GetScheduleResponse(s, time_slots, (int) minutes / s.meeting_duration, num_weeks, 200);
 				        response.put("body", new Gson().toJson(responseObj));	
 					} else {
 						responseObj = new GetScheduleResponse(500, "Unknown system error.");

@@ -1,0 +1,12 @@
+{
+    "id": 1,
+    "date": "YYYY-MM-DD",
+    "start_time": "HH:MM:SS",
+    "end_time": "HH:MM:SS",
+    "is_open": true,
+    "time_slots": [],
+    "meeting": {
+        "id": 1,
+        "participant": "MySecretCodeHere"
+    }
+}

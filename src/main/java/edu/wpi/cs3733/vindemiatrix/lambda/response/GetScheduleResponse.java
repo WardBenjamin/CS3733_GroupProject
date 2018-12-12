@@ -11,15 +11,17 @@ public class GetScheduleResponse {
 	public final String error;
 	
 	public final int time_slots_per_day;
+	public final int num_weeks;
 	
 	public final Schedule schedule;
 	public final TimeSlot time_slots[];
 	
-	public GetScheduleResponse(Schedule s, List<TimeSlot> ts, int time_slots_per_day, int httpCode) {
+	public GetScheduleResponse(Schedule s, List<TimeSlot> ts, int time_slots_per_day, int num_weeks, int httpCode) {
 		this.schedule = s;
 		this.error = "";
 		this.httpCode = httpCode;
 		this.time_slots_per_day = time_slots_per_day;
+		this.num_weeks = num_weeks;
 		this.time_slots = new TimeSlot[ts.size()];
 		int x = 0;
 		
@@ -33,6 +35,7 @@ public class GetScheduleResponse {
 		this.time_slots = null;
 		this.httpCode = httpCode;
 		this.time_slots_per_day = 0;
+		this.num_weeks = 0;
 		this.error = error;
 	}
 	
@@ -41,6 +44,7 @@ public class GetScheduleResponse {
 		this.schedule = null;
 		this.time_slots = null;
 		this.time_slots_per_day = 0;
+		this.num_weeks = 0;
 		this.httpCode = httpCode;
 	}
 }

@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 
 import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
 import edu.wpi.cs3733.vindemiatrix.db.dao.MeetingDAO;
+import edu.wpi.cs3733.vindemiatrix.db.dao.ScheduleDAO;
 import edu.wpi.cs3733.vindemiatrix.db.dao.TimeSlotDAO;
 import edu.wpi.cs3733.vindemiatrix.lambda.request.DeleteMeetingRequest;
 import edu.wpi.cs3733.vindemiatrix.lambda.response.BasicResponse;
@@ -89,16 +90,17 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 			if (success) {
 				try {
 					int authorized = dao.isAuthorized(request.meeting_id, request.secret_code);
+					int authorized2 = ts_dao.isAuthorized(request.time_slot_id, request.secret_code);
 					
-					if (authorized == 1) {
+					if (authorized == 1 || authorized2 == 1) {
 						response.put("body", new Gson().toJson(new BasicResponse(401, "Invalid secret code.")));
 						success = false;
-					} else if (authorized == 2) {
+					} else if (authorized == 2 && authorized2 == 2) {
 						response.put("body", new Gson().toJson(new BasicResponse(403, "Incorrect secret code.")));
 						success = false;
 					}
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
+					response.put("body", new Gson().toJson(new BasicResponse(500, "SQL error checking permissions.")));
 					e.printStackTrace();
 				}
 			}
@@ -116,7 +118,7 @@ public class DeleteMeetingHandler implements RequestStreamHandler {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					response.put("body", new Gson().toJson(new BasicResponse(500, "Error with SQL.")));
+					response.put("body", new Gson().toJson(new BasicResponse(500, "Error with SQL when deleting meeting.")));
 				}
 			}
 		}

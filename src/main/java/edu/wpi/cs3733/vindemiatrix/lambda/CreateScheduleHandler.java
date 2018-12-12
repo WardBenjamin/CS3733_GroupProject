@@ -151,7 +151,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				c.setTime(date2);
 				int day_end = c.get(Calendar.DAY_OF_YEAR);
 				
-				days = Math.abs(day_end - day_start);
+				days = Math.abs(day_end - day_start) + 1;
 				
 //				if (days > 5) { days--; }
 				

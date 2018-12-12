@@ -149,7 +149,7 @@ public class GetScheduleHandler implements RequestStreamHandler {
 				if (success) {
 					c.add(Calendar.DAY_OF_MONTH, Calendar.MONDAY - c.get(Calendar.DAY_OF_WEEK));
 					String week_start = dateFormat.format(c.getTime());
-					c.add(Calendar.DAY_OF_MONTH, 7);
+					c.add(Calendar.DAY_OF_MONTH, 6);
 					String week_end = dateFormat.format(c.getTime());
 
 					logger.log("determed start and end of week.\n");
@@ -170,7 +170,15 @@ public class GetScheduleHandler implements RequestStreamHandler {
 						responseObj = new GetScheduleResponse(404, "Schedule not found.");
 				        response.put("body", new Gson().toJson(responseObj));	
 					} else if (s != null && time_slots != null) {
-						responseObj = new GetScheduleResponse(s, time_slots, 200);
+						SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+						long timeDifference = 0;
+						try {
+							timeDifference = timeFormat.parse(s.start_time).getTime() - timeFormat.parse(s.start_time).getTime();
+						} catch (java.text.ParseException e) { e.printStackTrace(); }
+						long seconds = timeDifference / 1000;
+						long minutes = seconds / 60;
+						
+						responseObj = new GetScheduleResponse(s, time_slots, (int) minutes / s.meeting_duration, 200);
 				        response.put("body", new Gson().toJson(responseObj));	
 					} else {
 						responseObj = new GetScheduleResponse(500, "Unknown system error.");

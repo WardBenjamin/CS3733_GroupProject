@@ -119,17 +119,25 @@ public class UpdateTimeSlotsHandler implements RequestStreamHandler {
 							}
 							break;
 						case "day":
-							if (ts_dao.updateTimeSlotsOnDay(request.day, request.schedule_id, request.open == 1)) {
-								response.put("body", new Gson().toJson(new BasicResponse(200)));
+							if (ts_dao.hasMeetingOnDay(request.day, request.time_slot_id)) {
+								response.put("body", new Gson().toJson(new BasicResponse(409, "Slots cannot be closed as there are one or more meetings in it.")));
 							} else {
-								response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slots.")));
+								if (ts_dao.updateTimeSlotsOnDay(request.day, request.schedule_id, request.open == 1)) {
+									response.put("body", new Gson().toJson(new BasicResponse(200)));
+								} else {
+									response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slots.")));
+								}
 							}
 							break;
 						case "slot":
-							if (ts_dao.updateTimeSlotOnHours(request.timeslot, request.schedule_id, request.open == 1)) {
-								response.put("body", new Gson().toJson(new BasicResponse(200)));
+							if (ts_dao.hasMeetingAtTimeSlot(request.timeslot, request.time_slot_id)) {
+								response.put("body", new Gson().toJson(new BasicResponse(409, "Slots cannot be closed as there are one or more meetings in it.")));
 							} else {
-								response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slots.")));
+								if (ts_dao.updateTimeSlotOnHours(request.timeslot, request.schedule_id, request.open == 1)) {
+									response.put("body", new Gson().toJson(new BasicResponse(200)));
+								} else {
+									response.put("body", new Gson().toJson(new BasicResponse(500, "Error updating time slots.")));
+								}
 							}
 							break;
 					}

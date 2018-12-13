@@ -171,6 +171,26 @@ public class TimeSlotDAO {
 	}
 	
 	/**
+	 * check if there is a time slot on a day
+	 * @param day the day (YYYY-MM-DD)
+	 * @param schedule_id schedule id 
+	 */
+	public boolean hasMeetingOnDay(String day, int schedule_id) throws Exception {
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS conflicts FROM `time_slots` WHERE `schedule_id` = ? AND `date` = ? AND `meeting` IS NOT NULL;");
+			ps.setInt(1, schedule_id);
+			ps.setString(2, day);
+			ResultSet rs = ps.executeQuery();
+			int count = 0;
+			if (rs.next()) { count = rs.getInt("conflicts"); }
+			ps.close();
+			return (count > 0);
+		} catch (Exception e) {
+			throw new Exception("Failed to check for time slots on a specified day: " + e.getMessage());
+		}	
+	}
+	
+	/**
 	 * update time slots to open or closed on a day for schedule
 	 * @param day the day (YYYY-MM-DD)
 	 * @param schedule_id schedule id 
@@ -188,6 +208,26 @@ public class TimeSlotDAO {
 			return (numAltered > 0);
 		} catch (Exception e) {
 			throw new Exception("Failed to update time slots on a specified day: " + e.getMessage());
+		}	
+	}
+	
+	/**
+	 * check if any meetings are in a specific time slot across all days
+	 * @param timeslot the time it starts at
+	 * @param schedule_id schedule id 
+	 */
+	public boolean hasMeetingAtTimeSlot(String timeslot, int schedule_id) throws Exception {
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) AS conflicts FROM `time_slots` WHERE `schedule_id` = ? AND `start_time` = ? AND `meeting` IS NOT NULL;");
+			ps.setInt(1, schedule_id);
+			ps.setString(2, timeslot);
+			ResultSet rs = ps.executeQuery();
+			int count = 0;
+			if (rs.next()) { count = rs.getInt("conflicts"); }
+			ps.close();
+			return (count > 0);		
+		} catch (Exception e) {
+			throw new Exception("Failed to update time slot: " + e.getMessage());
 		}	
 	}
 	

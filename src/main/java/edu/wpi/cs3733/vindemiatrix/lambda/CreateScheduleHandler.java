@@ -40,7 +40,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 
 		JSONObject header = new JSONObject();
 		header.put("Content-Type",  "application/json");
-		header.put("Access-Control-Allow-Methods", "GET,PUT,DELETE,OPTIONS");
+		header.put("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
 		header.put("Access-Control-Allow-Origin",  "*");
         
 		JSONObject response = new JSONObject();
@@ -122,10 +122,10 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			if (success) {
 				Calendar c = Calendar.getInstance();
 				c.setTime(new Date(System.currentTimeMillis()));
-//				c.set(Calendar.HOUR, 0);
-//				c.set(Calendar.MINUTE, 0);
-//				c.set(Calendar.SECOND, 0);
-//				c.set(Calendar.MILLISECOND, 0);
+				c.set(Calendar.HOUR, 0);
+				c.set(Calendar.MINUTE, 0);
+				c.set(Calendar.SECOND, 0);
+				c.set(Calendar.MILLISECOND, 0);
 
 				logger.log("Checking if in past: " + (c.getTime().getTime() <= date1.getTime()) + "\n");
 				success &= c.getTime().getTime() <= date1.getTime();
@@ -162,7 +162,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 
 				// create schedule and generate response
 				Schedule s = createSchedule(request.name, request.start_date, request.end_date, 
-						request.start_time + ":00", request.end_time + ":00", request.meeting_duration);
+						request.start_time + ":00", request.end_time + ":00", request.meeting_duration, request.default_open);
 				if (s != null) {
 					logger.log("Created schedule. Now creating time slots...\n");
 					TimeSlot[] time_slots = new TimeSlot[(int) ((days) * timeSlotsPerDay)];
@@ -221,12 +221,12 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 	 * @param meeting_duration The length of a meeting in minutes
 	 * @return the schedule that was created 
 	 */
-	Schedule createSchedule(String name, String start_date, String end_date, String start_time, String end_time, int meeting_duration) {
+	Schedule createSchedule(String name, String start_date, String end_date, String start_time, String end_time, int meeting_duration, int default_open) {
 		Schedule s;
 		ScheduleDAO dao = new ScheduleDAO();
 
 		try {
-			s = dao.createSchedule(name, start_date, end_date, start_time, end_time, meeting_duration);
+			s = dao.createSchedule(name, start_date, end_date, start_time, end_time, meeting_duration, default_open);
 		} catch (Exception e) {
 			System.out.println("createSchedule(): Error creating schedule: " + e.toString() + "\n");
 			s = null;

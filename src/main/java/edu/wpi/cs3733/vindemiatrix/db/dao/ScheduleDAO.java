@@ -41,7 +41,7 @@ public class ScheduleDAO {
 			
 			if (result.next()) {
 				s = new Schedule(id, "", result.getString(3), result.getString(4), 
-						result.getString(5), result.getString(6), result.getString(7), result.getInt(8));
+						result.getString(5), result.getString(6), result.getString(7), result.getInt(8), result.getInt(9));
 			}
 			
 			result.close();
@@ -68,7 +68,7 @@ public class ScheduleDAO {
 			
 			if (result.next()) {
 				s = new Schedule(id, "", result.getString(3), result.getString(4), 
-						result.getString(5), result.getString(6), result.getString(7), result.getInt(8));
+						result.getString(5), result.getString(6), result.getString(7), result.getInt(8), result.getInt(9));
 				
 				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 				
@@ -106,14 +106,14 @@ public class ScheduleDAO {
 	 * @return The schedule or null on failure
 	 */
 	public Schedule createSchedule(String name, String start_date, String end_date, String start_time, 
-			String end_time, int meeting_duration) throws Exception{
+			String end_time, int meeting_duration, int default_open) throws Exception{
 		Schedule s = null;
 		
 		try {
 			PreparedStatement ps = conn.prepareStatement(
 					"INSERT INTO `schedules` (`name`, `start_date`, `end_date`, "
-					+ "`start_time`, `end_time`, `secret_code`, `meeting_duration`) "
-					+ "VALUES (?,?,?,?,?,?,?);");
+					+ "`start_time`, `end_time`, `secret_code`, `meeting_duration`, `default_open`) "
+					+ "VALUES (?,?,?,?,?,?,?,?);");
 
 			ps.setString(1, name);
 			ps.setString(2, start_date);
@@ -121,6 +121,7 @@ public class ScheduleDAO {
 			ps.setString(4, start_time);
 			ps.setString(5, end_time);
 			ps.setInt(7, meeting_duration);
+			ps.setInt(8, default_open);
 			
 			UUID uuid = UUID.randomUUID();
 			
@@ -138,7 +139,7 @@ public class ScheduleDAO {
 					id = rs.getInt(1);
 				}
 				
-				s = new Schedule(id, uuid.toString(), name, start_date, end_date, start_time, end_time, meeting_duration);
+				s = new Schedule(id, uuid.toString(), name, start_date, end_date, start_time, end_time, meeting_duration, default_open);
 			}
 
 			ps.close();
@@ -149,22 +150,49 @@ public class ScheduleDAO {
 		return s;
 	}
 	
-	/*
-	 * extends the date range 
-	 * @param secretCode secret code for the schedule
+	/**
+	 * extends the start date
 	 * @param id schedule id 
 	 * @param startDate new start date of schedule
-	 * @param endDate new end date of schedule
+	 * @throws Exception on SQL error
 	 */
-	//TODO: Extend date range 
-	public boolean extendDateRange(String secretCode, int id, String startDate, String endDate) {
-		return true; 
+	public boolean extendStartDate(int id, String startDate) throws Exception {
+		try {
+			PreparedStatement ps = conn.prepareStatement("UPDATE `schedules` SET `start_date` = ? WHERE `id` = ?");
+			ps.setString(1, startDate);
+			ps.setInt(2, id);
+			int count = ps.executeUpdate();
+			ps.close();
+			return count == 1;
+		} catch (Exception e) {
+			throw new Exception("Failed to extend schedule start date: " + e.getMessage());
+		}
 	}
 	
-	/*
+	/**
+	 * extends the end date
+	 * @param id schedule id 
+	 * @param endDate new end date of schedule
+	 * @throws Exception on SQL error
+	 */
+	public boolean extendEndDate(int id, String endDate) throws Exception {
+		try {
+			PreparedStatement ps = conn.prepareStatement("UPDATE `schedules` SET `end_date` = ? WHERE `id` = ?");
+			ps.setString(1, endDate);
+			ps.setInt(2, id);
+			int count = ps.executeUpdate();
+			ps.close();
+			return count == 1;
+		} catch (Exception e) {
+			throw new Exception("Failed to extend schedule end date: " + e.getMessage());
+		}
+	}
+	
+	/**
 	 * deletes a schedule 
 	 * @param id schedule id
 	 * @return true unless exception
+	 * @throws Exception on SQL error
 	 */
 	public boolean deleteSchedule(int id) throws Exception {
 		try {

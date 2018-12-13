@@ -38,7 +38,7 @@ public class DeleteScheduleHandler implements RequestStreamHandler {
 
 		JSONObject header = new JSONObject();
 		header.put("Content-Type",  "application/json");
-		header.put("Access-Control-Allow-Methods", "GET,PUT,DELETE,OPTIONS");
+		header.put("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
 		header.put("Access-Control-Allow-Origin",  "*");
         
 		JSONObject response = new JSONObject();

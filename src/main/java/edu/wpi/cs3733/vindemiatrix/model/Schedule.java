@@ -12,6 +12,7 @@ public class Schedule {
 	public final String start_time;
 	public final String end_time;
 	public final int meeting_duration;
+	public final int default_open;
 	
 	ArrayList<TimeSlot> timeSlots;
 	
@@ -26,7 +27,7 @@ public class Schedule {
 	 * @param endTime The end time of the schedule
 	 */
 	public Schedule(int id, String secret_code, String name, String startDate, String endDate, 
-			String startTime, String endTime, int meetingDuration) {
+			String startTime, String endTime, int meetingDuration, int default_open) {
 		this.id = id;
 		this.secret_code = secret_code;
 		this.name = name;
@@ -35,6 +36,7 @@ public class Schedule {
 		this.start_time = startTime;
 		this.end_time = endTime;
 		this.meeting_duration = meetingDuration;
+		this.default_open = default_open;
 	}
 	
 	/**

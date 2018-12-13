@@ -41,7 +41,7 @@ function getActualDayCount(schedule) {
 }
 
 function populateTimeSlots(timeSlots) {
-    for(let i = 0; i < timeSlots.length; i++) {
+    for (let i = 0; i < timeSlots.length; i++) {
         let slot = timeSlots[i];
         let meeting = slot.meeting;
 
@@ -52,62 +52,97 @@ function populateTimeSlots(timeSlots) {
         $("#ts" + slot.id).data(slot);
         $(control_button_selector).data(slot);
         $(create_meeting_button_selector).data(slot);
-        if(meeting) {
+        if (meeting) {
             meeting.ts_id = slot.id;
             $(delete_meeting_button_selector).data(meeting);
         }
 
-        $(control_button_selector).click(function() {
+        $(control_button_selector).click(function () {
             console.log("Clicked button to toggle time slot:");
             console.log($(this).data());
-           toggleTimeSlot($(this).data());
+            toggleTimeSlot($(this).data());
         });
-        $(create_meeting_button_selector).click(function()
-        {
+        $(create_meeting_button_selector).click(function () {
             createMeeting($(this).data());
         });
-        if(meeting) {
-            $(delete_meeting_button_selector).click(function() {
+        if (meeting) {
+            $(delete_meeting_button_selector).click(function () {
                 deleteMeeting($(this).data());
             });
         }
     }
 }
 
+function populateDays() {
+    $(".open-day").click(function() {
+       openDay($(this).attr("data-date"));
+    });
+    $(".close-day").click(function() {
+        closeDay($(this).attr("data-date"));
+    });
+}
+
+function populateTimes() {
+    $(".open-time").click(function() {
+        openTime($(this).attr("data-time"));
+    });
+    $(".close-time").click(function() {
+        closeTime($(this).attr("data-time"));
+    });
+}
+
 function constructDayHeaderDiv(date) {
-    return '<div style="order:1;" class="Rtable-cell"><h3>' + days[date.getDay()] + " " + (date.getMonth() + 1)
-        + "/" + date.getDate() + '</h3></div>\n';
+    let year = date.getFullYear();
+    let month = date.getMonth() + 1;
+    let day = date.getDate();
+
+    let full_date = "" + year + '-' + month + '-' + day;
+
+    return '<div style="order:1;" class="Rtable-cell Rtable-cell-tall">'
+        + '<h3>' + days[date.getDay()] + " " + month + "/" + day + '</h3>'
+        + '<button type="button" class="small anchor-bottom edit-item open-day" data-date="'
+        + full_date + '" style="margin-left: -10px;">Open</button>'
+        + '<button type="button" class="small anchor-bottom anchor-right edit-item close-day" data-date="'
+        + full_date + '">Close</button>'
+        + '</div>\n';
 }
 
 function constructTimeSlotDiv(timeSlot, k) {
-    console.log(timeSlot);
-    console.log("k=" + k);
+    // console.log(timeSlot);
+    // console.log("k=" + k);
 
     let innerhtml;
     let class_ending = '"';
 
-    if(timeSlot.meeting && timeSlot.is_open) {
+    if (timeSlot.meeting && timeSlot.is_open) {
         innerhtml = timeSlot.meeting.name;
     } else {
         innerhtml = '<button type="button" class="small vertical-center edit-item" id="btn_ts' + timeSlot.id
             + '" style="margin-left: -10px;">' + (timeSlot.is_open ? 'Close' : 'Open') + '</button>';
     }
 
-    if(timeSlot.is_open && !timeSlot.meeting) {
+    if (timeSlot.is_open && !timeSlot.meeting) {
         innerhtml += '<button type="button" class="small vertical-center anchor-right" id="btn_cm_ts' + timeSlot.id + '">+</button>';
     } else {
         class_ending = ' closed"';
-        if(timeSlot.is_open && timeSlot.meeting) {
+        if (timeSlot.is_open && timeSlot.meeting) {
             innerhtml += '<button type="button" class="small vertical-center anchor-right" id="btn_dm_ts' + timeSlot.id + '">-</button>';
         }
     }
 
-    return '<div style="order:' + (k + 2) + ';" class="Rtable-cell' + class_ending +' id="ts' + timeSlot.id + '">'
+    return '<div style="order:' + (k + 2) + ';" class="Rtable-cell' + class_ending + ' id="ts' + timeSlot.id + '">'
         + innerhtml + '</div>\n';
 }
 
 function constructTimeRowDiv(time, k) {
-    return '<div style="order:' + (k + 2) + ';" class="Rtable-cell">' + time + '</div>\n'
+    return '<div style="order:' + (k + 2) + ';" class="Rtable-cell">'
+        + '<div>' + time + '</div>'
+        + '<div class="vertical-center anchor-right">'
+        + '<button type="button" class="small edit-item open-time" data-time="'
+        + time + '" style="margin-left: -10px;">Open</button>'
+        + '<button type="button" class="small edit-item close-time" data-time="'
+        + time + '">Close</button></div>'
+        + '</div>\n'
 }
 
 function generateTable(schedule, timeSlots) {
@@ -132,8 +167,8 @@ function generateTable(schedule, timeSlots) {
     }
 
     for (let j = 0, jDate = getProperDate(schedule.start_date); j < day_count; j++, jDate.setTime(jDate.getTime() + (24 * 60 * 60 * 1000))) {
-        console.log("j=" + j);
-        console.log("jDate=" + jDate);
+        // console.log("j=" + j);
+        // console.log("jDate=" + jDate);
         if (jDate.getDay() !== 0 && jDate.getDay() !== 6) {
             table_innerHTML += constructDayHeaderDiv(jDate);
 
@@ -150,11 +185,12 @@ function generateTable(schedule, timeSlots) {
     $("#schedule_table").data(schedule);
 
     populateTimeSlots(timeSlots);
+    populateDays();
+    populateTimes();
 
-
-    $('#secret_code').on('input', function() {
+    $('#secret_code').on('input', function () {
         secret_code = $(this).val(); // Get the current value of the input field.
-        if(secret_code)
+        if (secret_code)
             enableEditView();
         else
             disableEditView();
@@ -169,7 +205,7 @@ function regenerateSchedule() {
     // var js = JSON.stringify(data);
     // console.log("JS:" + js);
 
-    $.get(api_schedule_url, {id: hash, week_start_date: "1970-01-01"}).done(function(data) {
+    $.get(api_schedule_url, {id: hash, week_start_date: "1970-01-01"}).done(function (data) {
         console.log(data);
         generateTable(data.schedule, data.time_slots);
         ensureCorrectEditView();

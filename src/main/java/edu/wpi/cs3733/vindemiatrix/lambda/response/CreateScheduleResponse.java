@@ -19,18 +19,18 @@ public class CreateScheduleResponse {
 	public final int days;
 	public final int timeSlotsPerDay;
 
-	public CreateScheduleResponse(String name, String secret_code, CreateScheduleRequest req, int id, int days, int timeSlotsPerDay, int httpCode) {
-		this.name = name;
-		this.secret_code = secret_code;
+	public CreateScheduleResponse(Schedule s, int days, int timeSlotsPerDay, int httpCode) {
+		this.name = s.name;
+		this.secret_code = s.secret_code;
 		this.httpCode = httpCode;
 		this.error = "";
 		
-		this.start_date = req.start_date;
-		this.end_date = req.end_date;
-		this.start_time = req.start_time;
-		this.end_time = req.end_time;
-		this.meeting_duration = req.meeting_duration;
-		this.id = id;
+		this.start_date = s.start_date;
+		this.end_date = s.end_date;
+		this.start_time = s.start_time;
+		this.end_time = s.end_time;
+		this.meeting_duration = s.meeting_duration;
+		this.id = s.id;
 		this.days = days;
 		this.timeSlotsPerDay = timeSlotsPerDay;
 	}

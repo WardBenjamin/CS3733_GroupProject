@@ -122,10 +122,10 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			if (success) {
 				Calendar c = Calendar.getInstance();
 				c.setTime(new Date(System.currentTimeMillis()));
-				c.set(Calendar.HOUR, 0);
-				c.set(Calendar.MINUTE, 0);
-				c.set(Calendar.SECOND, 0);
-				c.set(Calendar.MILLISECOND, 0);
+				c.add(Calendar.HOUR, -5);
+				c.set(Calendar.MINUTE, 59);
+				c.set(Calendar.SECOND, 59);
+				c.set(Calendar.MILLISECOND, 999);
 
 				logger.log("Checking if in past: " + (c.getTime().getTime() <= date1.getTime()) + "\n");
 				success &= c.getTime().getTime() <= date1.getTime();
@@ -148,10 +148,19 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				Calendar c = Calendar.getInstance();
 				c.setTime(date1);
 				int day_start = c.get(Calendar.DAY_OF_YEAR);
+				
+				logger.log("Start Date:" + fullFormat.format(c.getTime()) + "\n");
+				logger.log("Start Day:" + day_start + "\n");
+				
 				c.setTime(date2);
 				int day_end = c.get(Calendar.DAY_OF_YEAR);
 				
+				logger.log("End Date:" + fullFormat.format(c.getTime()) + "\n");
+				logger.log("End Day:" + day_end + "\n");
+				
 				days = Math.abs(day_end - day_start) + 1;
+				
+				logger.log("Calculated days:" + days + "\n");
 				
 //				if (days > 5) { days--; }
 				
@@ -159,6 +168,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 //				days = (int) (dateDifference / 1000 / 60 / 60 / 24);
 				
 				logger.log("Determined start and end dates and times, creating schedule...\n");
+				
 
 				// create schedule and generate response
 				Schedule s = createSchedule(request.name, request.start_date, request.end_date, 
@@ -171,8 +181,16 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 					
 					try {
 						c.setTime(fullFormat.parse(request.start_date + " " + request.start_time));
+						
+						int start_hour = c.get(Calendar.HOUR);
+						int start_minute = c.get(Calendar.MINUTE);
+						
+						logger.log("Start Hour: " + start_hour + ", Start Minute: " + start_minute + "\n");
+						
 						int k = 0;
 						for (int i = 0; i < days; i++) {
+							logger.log("Adding timeslots to date:" + fullFormat.format(c.getTime()) + "\n");
+							
 							if (c.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY &&
 								c.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
 								for(int j = 0; j < timeSlotsPerDay; j++) {
@@ -185,8 +203,16 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 								}
 							}
 							
-							c.add(Calendar.MINUTE, -1 * timeSlotsPerDay * request.meeting_duration);
-							c.add(Calendar.DAY_OF_MONTH, 1);
+							logger.log("> Resultant date:" + fullFormat.format(c.getTime()) + "\n");
+							
+							c.set(Calendar.HOUR_OF_DAY, start_hour);
+							c.set(Calendar.MINUTE, start_minute);
+
+							logger.log("> Reset Hours and Minutes:" + fullFormat.format(c.getTime()) + "\n");
+							
+							c.add(Calendar.DAY_OF_YEAR, 1);
+							
+							logger.log("> Updated date:" + fullFormat.format(c.getTime()) + "\n");
 						}
 						
 						responseObj = new CreateScheduleResponse(s.name, s.secret_code, request, s.id, days, timeSlotsPerDay, 200);

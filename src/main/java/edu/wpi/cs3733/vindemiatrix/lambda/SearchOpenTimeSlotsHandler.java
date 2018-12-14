@@ -28,7 +28,7 @@ public class SearchOpenTimeSlotsHandler implements RequestStreamHandler {
     @SuppressWarnings("unchecked")
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
     	LambdaLogger logger = context.getLogger();
-		logger.log("Loading Java Lambda handler for GetScheduleHandler\n");
+		logger.log("Loading Java Lambda handler for SearchOpenTimeSlots\n");
 
 		JSONObject header = new JSONObject();
 		header.put("Content-Type",  "application/json");

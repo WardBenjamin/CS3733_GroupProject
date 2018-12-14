@@ -78,7 +78,36 @@ public class ScheduleDAO {
 			throw new Exception("Failed to get schedules older than date: " + e.getMessage()) ; 
 		}
 	}
-
+	
+	/**
+	 * get schedules created in the past N hours
+	 * @param timestamp start time for range
+	 * @return List of schedules
+	 * @throws Exception
+	 */
+	public List<Schedule> getRecentSchedules(String timestamp) throws Exception {
+		ArrayList<Schedule> schedules = new ArrayList<>();
+		
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE `created_at` > ?;");
+			ps.setString(1, timestamp);
+			ResultSet result = ps.executeQuery();
+			
+			while (result.next()) {
+				schedules.add(new Schedule(result.getInt("id"), "", result.getString("name"), result.getString("start_date"), 
+						result.getString("end_date"), result.getString("start_time"), result.getString("end_time"), 
+						result.getInt("meeting_duration"), result.getInt("default_open")));
+			}
+			
+			result.close();
+			ps.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception("Failed to get schedules older than date: " + e.getMessage()) ; 
+		}
+		
+		return schedules; 
+	}
 	
 	/**
 	 * Gets the number of weeks in a schedule

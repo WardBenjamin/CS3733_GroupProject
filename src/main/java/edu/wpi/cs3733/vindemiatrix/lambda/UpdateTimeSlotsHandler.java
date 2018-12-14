@@ -33,7 +33,7 @@ public class UpdateTimeSlotsHandler implements RequestStreamHandler {
 
 		JSONObject header = new JSONObject();
 		header.put("Content-Type", "application/json");
-		header.put("Access-Control-Allow-Methods", "PUT,DELETE,OPTIONS");
+		header.put("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
 		header.put("Access-Control-Allow-Origin", "*");
         
 		JSONObject response = new JSONObject();

@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -121,35 +123,47 @@ public class TimeSlotDAO {
 			throw new Exception("Failed to update time slot meeting id: " + e.getMessage());
 		}
 	}
-	
-	/*
-	 * search for available time slots
-	 * within the input search range 
-	 * @param id schedule id  
-	 * @param startDate earliest date of time slots to look for 
-	 * @param endDate latest date of time slot to look for 
-	 * @param startTime earliest time of time slots to look for
-	 * @param endTime latest time of time slots to look for 
+
+	/**
+	 * Find open time slots
+	 * @param schedule_id the schedule to look in
+	 * @param date_query a string compatible with SQL LIKE syntax
+	 * @param time a string compatible with SQL LIKE syntax
+	 * @param day_of_week the day of week or -1
+	 * @return available time slots
+	 * @throws Exception
 	 */
-//	public List<TimeSlot> getAvailableTimeSlot(Int id, String startDate, String endDate, String startTime, String endTime) throws Exception{
-//			List<TimeSlot> availableTimeSlots = new ArrayList<>();
-//			try {
-//				Statement statement = conn.createStatement();
-//				String query = "SELECT * FROM TimeSlots";
-//				ResultSet resultSet = statement.executeQuery(query);
-//
-//				while (resultSet.next()) {
-//					TimeSlot t = (resultSet);
-//					availableTimeSlots.add(c);
-//				}
-//				resultSet.close();
-//				statement.close();
-//				return allConstants;
-//
-//			} catch (Exception e) {
-//				throw new Exception("Failed in getting Available time slots: " + e.getMessage());
-//			}
-//		}
+	public List<TimeSlot> findOpenTimeSlots(int schedule_id, String date_query, String time, int day_of_week) throws Exception{
+		List<TimeSlot> availableTimeSlots = new ArrayList<>();
+		try {
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `time_slots` WHERE `schedule_id` = ? AND `is_open` = 1 AND `meeting` IS NULL AND `date` LIKE ? AND `start_time` LIKE ?;");
+			ps.setInt(1, schedule_id);
+			ps.setString(2, date_query);
+			ps.setString(3, time);
+			ResultSet rs = ps.executeQuery();
+			
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			Calendar c = Calendar.getInstance();
+			
+			while (rs.next()) {
+				if (day_of_week == -1) {
+					availableTimeSlots.add(new TimeSlot(rs.getInt("id"), rs.getString("date"), rs.getString("start_time"), 
+							rs.getString("end_time"), true, null));
+				} else {
+					// take day of week into consideration
+					c.setTime(dateFormat.parse(rs.getString("date")));
+					if (c.get(Calendar.DAY_OF_WEEK) == day_of_week) {
+						availableTimeSlots.add(new TimeSlot(rs.getInt("id"), rs.getString("date"), rs.getString("start_time"), 
+								rs.getString("end_time"), true, null));
+					}
+				}
+			}
+
+			return availableTimeSlots;
+		} catch (Exception e) {
+			throw new Exception("Failed in getting Available time slots: " + e.getMessage());
+		}
+	}
 	
 	/**
 	 * update a time slot to open or closed

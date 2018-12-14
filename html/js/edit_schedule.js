@@ -20,24 +20,6 @@ function ensureCorrectEditView() {
         $(".edit-item").hide();
 }
 
-/*
-updatetimeslots
-OPTION1
-mode: indiv
-time_slot_id: 1234
-open: 1
-OPTION2
-mode: day
-schedule_id: 1234
-day: "2018-08-08"
-open: 1
-OPTION3
-mode: slot
-schedule_id: 1234
-timeslot: "14:00"
-open: 1
- */
-
 function sendTimeSlotUpdate(data, success_callback, fail_callback) {
     console.log(data);
     $.ajax({
@@ -143,5 +125,4 @@ function toggleTimeSlot(timeSlot) {
             console.log("Failed to " + (should_be_open === 1 ? "open" : "close") + " time slot: " + timeSlot.id)
         }
     )
-
 }

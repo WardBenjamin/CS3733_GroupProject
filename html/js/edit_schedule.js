@@ -126,3 +126,54 @@ function toggleTimeSlot(timeSlot) {
         }
     )
 }
+
+function populateTimeSlots(timeSlots) {
+    for (let i = 0; i < timeSlots.length; i++) {
+        let slot = timeSlots[i];
+        let meeting = slot.meeting;
+
+        let control_button_selector = "#btn_ts" + slot.id;
+        let create_meeting_button_selector = "#btn_cm_ts" + slot.id;
+        let delete_meeting_button_selector = "#btn_dm_ts" + slot.id;
+
+        $("#ts" + slot.id).data(slot);
+        $(control_button_selector).data(slot);
+        $(create_meeting_button_selector).data(slot);
+        if (meeting) {
+            meeting.ts_id = slot.id;
+            $(delete_meeting_button_selector).data(meeting);
+        }
+
+        $(control_button_selector).click(function () {
+            console.log("Clicked button to toggle time slot:");
+            console.log($(this).data());
+            toggleTimeSlot($(this).data());
+        });
+        $(create_meeting_button_selector).click(function () {
+            createMeeting($(this).data());
+        });
+        if (meeting) {
+            $(delete_meeting_button_selector).click(function () {
+                deleteMeeting($(this).data());
+            });
+        }
+    }
+}
+
+function populateDays() {
+    $(".open-day").click(function() {
+        openDay($(this).attr("data-date"));
+    });
+    $(".close-day").click(function() {
+        closeDay($(this).attr("data-date"));
+    });
+}
+
+function populateTimes() {
+    $(".open-time").click(function() {
+        openTime($(this).attr("data-time"));
+    });
+    $(".close-time").click(function() {
+        closeTime($(this).attr("data-time"));
+    });
+}

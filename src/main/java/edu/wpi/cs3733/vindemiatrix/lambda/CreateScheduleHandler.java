@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.sql.Date;
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -20,7 +19,6 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.Gson;
 
-import edu.wpi.cs3733.vindemiatrix.db.SchedulerDatabase;
 import edu.wpi.cs3733.vindemiatrix.db.dao.ScheduleDAO;
 import edu.wpi.cs3733.vindemiatrix.db.dao.TimeSlotDAO;
 import edu.wpi.cs3733.vindemiatrix.lambda.request.CreateScheduleRequest;
@@ -42,30 +40,30 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 		header.put("Content-Type",  "application/json");
 		header.put("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
 		header.put("Access-Control-Allow-Origin",  "*");
-        
+
 		JSONObject response = new JSONObject();
 		response.put("headers", header);
-		
+
 		CreateScheduleResponse responseObj = null;
 		String body = null;
 		boolean handled = false;
-		
+
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 			JSONParser parser = new JSONParser();
 			JSONObject event = (JSONObject) parser.parse(reader);
 			logger.log("Parsed Input:" + event.toJSONString() + "\n");
-			
+
 			String method = (String) event.get("httpMethod");
 			if (method != null && method.equalsIgnoreCase("OPTIONS")) {
 				// OPTIONS needs a 200 response
 				logger.log("OPTIONS request received" + "\n");
 				responseObj = new CreateScheduleResponse(200);  
-		        response.put("body", new Gson().toJson(responseObj));
-		        handled = true;
+				response.put("body", new Gson().toJson(responseObj));
+				handled = true;
 			} else {
 				body = (String) event.get("body");
-				
+
 				if (body == null) {
 					body = event.toJSONString();
 				}
@@ -75,21 +73,21 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			logger.log(pe.toString() + "\n");
 			responseObj = new CreateScheduleResponse(422, "Error parsing input.");
 			response.put("body", new Gson().toJson(responseObj));
-	        handled = true;
+			handled = true;
 		}
 
 		if (!handled) {
 			boolean success = true;
 			CreateScheduleRequest request = new Gson().fromJson(body, CreateScheduleRequest.class);
 			logger.log(request.toString() + "\n");
-			
+
 			// check inputs
 			if (request.isMissingFields()) {
 				response.put("body", new Gson().toJson(new CreateScheduleResponse(400, "Input is missing fields.")));
 				success = false;
 				logger.log("Input is missing fields!\n");
 			}
-			
+
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 			SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 			SimpleDateFormat fullFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -97,12 +95,12 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			java.util.Date date2 = null;
 			java.util.Date time1 = null;
 			java.util.Date time2 = null;
-			
+
 			int days = 0;
 			int timeSlotsPerDay = 0;
 			
 			String new_start_date = request.start_date, new_end_date = request.end_date;
-			
+
 			if (success) {
 				try {
 					Calendar c = Calendar.getInstance();
@@ -133,18 +131,19 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 						new_end_date = dateFormat.format(date2);
 					}
 					
+
 					time1 = timeFormat.parse(request.start_time);
 					time2 = timeFormat.parse(request.end_time);
-					
+
 					logger.log("Parsed dates and times successfully.\n");
 				} catch (java.text.ParseException e) {
 					responseObj = new CreateScheduleResponse(400, "Error parsing dates/times.");
-			        response.put("body", new Gson().toJson(responseObj));
+					response.put("body", new Gson().toJson(responseObj));
 					success = false;
 					e.printStackTrace();
 				}
 			}
-			
+
 			// validate date and time ranges
 			if (success) {
 				Calendar c = Calendar.getInstance();
@@ -158,19 +157,19 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 				success &= c.getTime().getTime() <= date1.getTime();
 				success &= date1.getTime() < date2.getTime();
 				success &= time1.getTime() < time2.getTime();
-				
+
 				if (success == false) {
 					responseObj = new CreateScheduleResponse(400, "Start date must be in the future and must be before end date. Start time must be before end time.");
-			        response.put("body", new Gson().toJson(responseObj));
+					response.put("body", new Gson().toJson(responseObj));
 				}
 			}
-			
+
 			// create schedule
 			if (success) {
 				long timeDifference = time2.getTime() - time1.getTime();
 				long seconds = timeDifference / 1000;
 				long minutes = seconds / 60;
-				
+
 				timeSlotsPerDay = (int) minutes / request.meeting_duration;
 				Calendar c = Calendar.getInstance();
 				
@@ -193,20 +192,22 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 //				if (days > 5) { days--; }
 				
 				// ms -> sec -> min -> hr -> day)
-//				days = (int) (dateDifference / 1000 / 60 / 60 / 24);
-				
+				//				days = (int) (dateDifference / 1000 / 60 / 60 / 24);
+
 				logger.log("Determined start and end dates and times, creating schedule...\n");
 				
 
 				// create schedule and generate response
 				Schedule s = createSchedule(request.name, new_start_date, new_end_date, 
 						request.start_time + ":00", request.end_time + ":00", request.meeting_duration, request.default_open);
+
+
 				if (s != null) {
 					logger.log("Created schedule. Now creating time slots...\n");
-					TimeSlot[] time_slots = new TimeSlot[(int) ((days) * timeSlotsPerDay)];
+					TimeSlot[] time_slots = new TimeSlot[(days) * timeSlotsPerDay];
 					TimeSlotDAO ts_dao = new TimeSlotDAO();
 					c = Calendar.getInstance();
-					
+
 					try {
 						c.setTime(fullFormat.parse(new_start_date + " " + request.start_time));
 						
@@ -220,13 +221,13 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 							logger.log("Adding timeslots to date:" + fullFormat.format(c.getTime()) + "\n");
 							
 							if (c.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY &&
-								c.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
+									c.get(Calendar.DAY_OF_WEEK) != Calendar.SATURDAY) {
 								for(int j = 0; j < timeSlotsPerDay; j++) {
 									String date = dateFormat.format(c.getTime());
 									String start_time = timeFormat.format(c.getTime()) + ":00";
 									c.add(Calendar.MINUTE, request.meeting_duration);
 									String end_time = timeFormat.format(c.getTime()) + ":00";
-									
+
 									time_slots[k++] = ts_dao.createTimeSlot(s.id, date, start_time, end_time, request.default_open);
 								}
 							}
@@ -249,23 +250,23 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 						logger.log("Failed to create time slots.\n");
 						e.printStackTrace();
 						responseObj = new CreateScheduleResponse(500, "Error creating time slots.");
-				        response.put("body", new Gson().toJson(responseObj));
+						response.put("body", new Gson().toJson(responseObj));
 					}
 				} else {
 					responseObj = new CreateScheduleResponse(500, "Error creating schedule.");
-			        response.put("body", new Gson().toJson(responseObj));
+					response.put("body", new Gson().toJson(responseObj));
 				}
 			}
 		}
-		
+
 		String r = response.toJSONString();
-        logger.log("end result:" + r + "\n");
-        
-        OutputStreamWriter writer = new OutputStreamWriter(output, "UTF-8");
-        writer.write(r);  
-        writer.close();
+		logger.log("end result:" + r + "\n");
+
+		OutputStreamWriter writer = new OutputStreamWriter(output, "UTF-8");
+		writer.write(r);  
+		writer.close();
 	}
-	
+
 	/**
 	 * Create a schedule in the database
 	 * @param start_date The start date
@@ -285,7 +286,7 @@ public class CreateScheduleHandler implements RequestStreamHandler {
 			System.out.println("createSchedule(): Error creating schedule: " + e.toString() + "\n");
 			s = null;
 		}
-		
+
 		return s;
 	}
 

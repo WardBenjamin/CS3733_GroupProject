@@ -52,6 +52,32 @@ public class ScheduleDAO {
 			throw new Exception("Failed to get schedule: " + e.getMessage()) ; 
 		}
 	}
+	
+	/**
+	 * get schedules older than a given date (exclusive)
+	 * @param timestamp cut off timestamp
+	 * @return comma separated list of schedules to be used in SQL IN
+	 * @throws Exception
+	 */
+	public String getSchedulesOlderThan(String timestamp) throws Exception {
+		try {
+			String schedules = "-1"; // place holder, will be ignored by SQL queries as no schedule has ID -1 (this prevents IN () from breaking if no schedules are found)
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `schedules` WHERE `created_at` < ?;");
+			ps.setString(1, timestamp);
+			ResultSet result = ps.executeQuery();
+			
+			while (result.next()) {
+				schedules += "," + result.getInt("id");
+			}
+			
+			result.close();
+			ps.close();
+			return schedules; 
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception("Failed to get schedules older than date: " + e.getMessage()) ; 
+		}
+	}
 
 	
 	/**
@@ -204,6 +230,27 @@ public class ScheduleDAO {
 		} catch (Exception e) {
 			throw new Exception("Failed to delete schedule: " + e.getMessage());
 		}
+	}
+	
+	/**
+	 * deletes schedules with given IDs
+	 * @param ids schedule ids
+	 * @return number deleted
+	 * @throws Exception on SQL error
+	 */
+	public int adminDeleteSchedules(String ids) throws Exception {
+		int num_deleted = 0;
+		
+		try {
+			// this is safe from injection as WE generate schedule_ids from the database
+			PreparedStatement ps = conn.prepareStatement("DELETE FROM `schedules` WHERE `id` IN (" + ids + ")");
+			num_deleted = ps.executeUpdate();
+			ps.close();
+		} catch (Exception e) {
+			throw new Exception("Failed to delete schedules: " + e.getMessage());
+		}
+		
+		return num_deleted;
 	}
 	
 	/**

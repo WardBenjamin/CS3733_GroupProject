@@ -351,6 +351,39 @@ public class TimeSlotDAO {
 	}
 	
 	/**
+	 * Delete all the time slots and the meetings they contain for a given set of schedules
+	 * @param schedule_ids the schedule IDs
+	 * @return num deleted
+	 * @exception Exception on SQL failure
+	 */
+	public int adminDeleteTimeSlots(String schedule_ids) throws Exception {
+		int num_deleted = 0;
+		
+		try {
+			// this is safe from injection as WE generate schedule_ids from the database
+			PreparedStatement ps = conn.prepareStatement("SELECT * FROM `time_slots` WHERE `schedule_id` IN (" + schedule_ids + ");");
+			ResultSet rs = ps.executeQuery();
+			
+			while (rs.next()) {
+				int meeting_id = 0;
+				if ((meeting_id = rs.getInt(7)) != 0) {
+					ps = conn.prepareStatement("DELETE FROM `meetings` WHERE `id` = ?");
+					ps.setInt(1, meeting_id);
+					ps.execute();
+				}
+			}
+			
+			ps = conn.prepareStatement("DELETE FROM `time_slots` WHERE `schedule_id` IN (" + schedule_ids + ")");
+			num_deleted = ps.executeUpdate();
+			ps.close();
+		} catch (Exception e) {
+			throw new Exception("Exception while deleting time slots: " + e.getMessage());
+		}
+		
+		return num_deleted;
+	}
+	
+	/**
 	 * check if the secret code given is the code for the given time slot
 	 * @param id the time slot ID
 	 * @param secretCode the schedule secret code

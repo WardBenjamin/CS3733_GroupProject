@@ -2,6 +2,9 @@ var days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 var hash;
 var secret_code;
 
+var last_day;
+var current_start_date = "1970-01-01";
+
 function getProperDate(dateString) {
     var userTimezoneOffset = new Date(Date.now()).getTimezoneOffset() * 60000;
     return new Date(new Date(dateString).getTime() + userTimezoneOffset);
@@ -91,12 +94,36 @@ function populateTimes() {
     });
 }
 
+function constructSwitchTab(i, date) {
+    return '<li class="page-item">\n'
+        + '<a class="page-link" onclick="setWeek(' + date + ');">' + i + '</a>\n'
+        + '</li>'
+}
+
+function populateWeekSwitcher(num_weeks, start_date) {
+    let selector = $(".pagination");
+    selector.empty();
+    selector.append(constructSwitchTab(1, "1970-01-01"));
+    for(let i = 2, iDate = new Date(new Date(last_day).getTime() + (3 * 24 * 60 * 60 * 1000));
+        i <= num_weeks;
+        i++, iDate.setTime(iDate.getTime() + (3 * 24 * 60 * 60 * 1000))) {
+        let year = iDate.getFullYear();
+        let month = iDate.getMonth() + 1;
+        let day = iDate.getDate();
+
+        let full_date = "" + year + '-' + month + '-' + day;
+        selector.append(constructSwitchTab(i, full_date));
+    }
+}
+
 function constructDayHeaderDiv(date) {
     let year = date.getFullYear();
     let month = date.getMonth() + 1;
     let day = date.getDate();
 
     let full_date = "" + year + '-' + month + '-' + day;
+
+    last_day = full_date;
 
     return '<div style="order:1;" class="Rtable-cell Rtable-cell-tall">'
         + '<h3>' + days[date.getDay()] + " " + month + "/" + day + '</h3>'
@@ -188,6 +215,8 @@ function generateTable(schedule, timeSlots) {
     populateDays();
     populateTimes();
 
+    populateWeekSwitcher(schedule.num_weeks, schedule.start_date);
+
     $('#secret_code').on('input', function () {
         secret_code = $(this).val(); // Get the current value of the input field.
         if (secret_code)
@@ -205,7 +234,7 @@ function regenerateSchedule() {
     // var js = JSON.stringify(data);
     // console.log("JS:" + js);
 
-    $.get(api_schedule_url, {id: hash, week_start_date: "1970-01-01"}).done(function (data) {
+    $.get(api_schedule_url, {id: hash, week_start_date: current_start_date}).done(function (data) {
         console.log(data);
         generateTable(data.schedule, data.time_slots);
         ensureCorrectEditView();
@@ -216,5 +245,11 @@ function loadPage() {
     hash = window.location.hash.substring(1); // Puts hash in variable, and removes the # character
     secret_code = new URLSearchParams(window.location.search).get("secret_code");
 
+    regenerateSchedule();
+}
+
+function setWeek(week_number) {
+    if(page_number === 1)
+        current_start_date = "1970-01-01";
     regenerateSchedule();
 }

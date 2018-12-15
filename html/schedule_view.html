@@ -25,6 +25,7 @@
     <script type='text/javascript' src='js/api.js'></script>
     <script type='text/javascript' src='js/view_schedule.js'></script>
     <script type='text/javascript' src='js/edit_schedule.js'></script>
+    <script type='text/javascript' src='js/extend_schedule.js'></script>
     <script type='text/javascript' src='js/create_meeting.js'></script>
     <script type='text/javascript' src='js/delete_meeting.js'></script>
 </head>
@@ -40,11 +41,11 @@
             </span>
         </h1>
     </div>
-    <div class="row" style="display: none;">
+    <div class="row edit-item">
         <div class="col-md-12">
             <div class="alert alert-warning alert-dismissable">
                 <button type="button" class="small close" data-dismiss="alert" aria-hidden="true">×</button>
-                <strong>Warning!</strong> Status message.
+                <strong>Notice!</strong> Share the current URL with your participants.
             </div>
         </div>
     </div>
@@ -97,17 +98,36 @@
 
         </div>
     </div>
-    <nav class="pagination-sm">
-        <ul class="pagination">
-            <li class="page-item">
-                <a class="page-link" onclick="setPage(1);">1</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" onclick="setPage(2);">2</a>
-            </li>
-        </ul>
-    </nav>
-
+    <div>
+        Week Switcher:
+        <nav class="pagination-sm">
+            <ul class="pagination">
+                <li class="page-item">
+                    <a class="page-link" onclick="setPage(1);">1</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" onclick="setPage(2);">2</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <form class="edit-item" role="form" name="extendForm">
+        <div class="form-group">
+            <label for="start_date">
+                New start date
+            </label>
+            <input type="date" class="form-control" id="start_date" name="startDate"/>
+        </div>
+        <div class="form-group">
+            <label for="end_date">
+                New end date
+            </label>
+            <input type="date" class="form-control" id="end_date" name="endDate"/>
+        </div>
+        <button type="submit" onClick="event.preventDefault(); handleExtendClick()">
+            Submit
+        </button>
+    </form>
 </div>
 </body>
 </html>

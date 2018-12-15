@@ -25,6 +25,8 @@
     <script type='text/javascript' src='js/api.js'></script>
     <script type='text/javascript' src='js/validation_layer.js'></script>
     <script type='text/javascript' src='js/create_schedule.js'></script>
+    <script type='text/javascript' src='js/delete_schedule.js'></script>
+    <script type='text/javascript' src='js/search_timeslots.js'></script>
 </head>
 
 <body>
@@ -102,25 +104,77 @@
                 Submit
             </button>
         </form>
-        <form class="col-md-4 offset-md-1" role="form" name="deleteForm">
-            <h4>Delete Existing Schedule</h4>
-            <div class="form-group">
-                <label for="schedule_id">
-                    Schedule ID:
-                </label>
-                <input type="number" class="form-control" id="schedule_id" placeholder="#"/>
-            </div>
-            <div class="form-group">
-                <label for="secret_code">
-                    Secret code:
-                </label>
-                <input type="text" class="form-control" id="secret_code" placeholder="MySecretCodeHere"/>
-            </div>
-            <button type="submit" onClick="event.preventDefault(); handleDeleteClick(this)">
-                Submit
-            </button>
-            <p id="delete_results"></p>
-        </form>
+        <div class="col-md-4 offset-md-1">
+            <form role="form" name="deleteForm">
+                <h4>Delete Existing Schedule</h4>
+                <div class="form-group">
+                    <label for="schedule_id">
+                        Schedule ID:
+                    </label>
+                    <input type="number" class="form-control" id="schedule_id" placeholder="#"/>
+                </div>
+                <div class="form-group">
+                    <label for="secret_code">
+                        Secret code:
+                    </label>
+                    <input type="text" class="form-control" id="secret_code" placeholder="MySecretCodeHere"/>
+                </div>
+                <button type="submit" onClick="event.preventDefault(); handleDeleteClick(this)">
+                    Submit
+                </button>
+                <p id="delete_results"></p>
+            </form>
+            <form role="form" name="searchForm" style="padding-top: 30px;">
+                <h4>Search for Open Timeslot</h4>
+                <div class="form-group">
+                    <label for="search_schedule_id">
+                        Schedule ID
+                    </label>
+                    <input type="number" class="form-control" id="search_schedule_id" placeholder="#"/>
+                </div>
+                <div class="form-group">
+                    <label for="search_year">
+                        Year
+                    </label>
+                    <input type="number" class="form-control" id="search_year" placeholder="YYYY"/>
+                </div>
+                <div class="form-group">
+                    <label for="search_month">
+                        Month
+                    </label>
+                    <input type="number" class="form-control" id="search_month" placeholder="MM"/>
+                </div>
+                <div class="form-group">
+                    <label for="search_day">
+                        Day
+                    </label>
+                    <input type="number" class="form-control" id="search_day" placeholder="DD"/>
+                </div>
+                <div class="form-group">
+                    <label for="search_day_of_week">
+                        Day of Week
+                    </label>
+                    <select class="form-control" id="search_day_of_week" name="meetingDuration">
+                        <option value="-1">N/A</option>
+                        <option value="2">Monday</option>
+                        <option value="3">Tuesday</option>
+                        <option value="4">Wednesday</option>
+                        <option value="5">Thursday</option>
+                        <option value="6">Friday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="search_time">
+                        Time (24-hour format, with colon)
+                    </label>
+                    <input type="text" class="form-control" id="search_time" placeholder="TT:TT"/>
+                </div>
+                <button type="submit" onClick="event.preventDefault(); handleSearchClick(this)">
+                    Submit
+                </button>
+                <p id="search_results"></p>
+            </form>
+        </div>
     </div>
 </div>
 </body>

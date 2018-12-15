@@ -1,12 +1,11 @@
-console.log("Loaded schedule creation plugin");
+console.log("Loaded schedule deletion plugin");
 
-var js;
 
-function processCreateResponse(result) {
+function processDeleteResponse(result, schedule_id) {
     // Can grab any DIV or SPAN HTML element and can then manipulate its
     // contents dynamically via javascript
-    console.log("Create response result: " + result);
-    js = JSON.parse(result);
+    console.log("Delete response result: " + result);
+    let js = JSON.parse(result);
 
     var httpResult = js["httpCode"];
 
@@ -17,7 +16,7 @@ function processCreateResponse(result) {
 
         console.log(js);
 
-        $("#delete_results").text = js
+        $("#delete_results").text("Deleted schedule: " + schedule_id);
     }
 }
 
@@ -28,46 +27,15 @@ function handleDeleteClick(e) {
     var schedule_id = form.schedule_id.value;
     var secret_code = form.secret_code.value;
 
-    console.log("Start date: " + startDate);
-
-    if (!validateDate(startDate)) {
-        // TODO: Alert that start date is invalid
-        console.log("Couldn't validate start date");
-        return false;
-    }
-
-    if (!validateDate(endDate)) {
-        // TODO: Alert that end date is invalid
-        console.log("Couldn't validate end date");
-        return false;
-    }
-
-    if (!validateTime(startTime)) {
-        // TODO: Alert that start time is invalid
-        console.log("Couldn't validate start time");
-        return false;
-    }
-
-    if (!validateTime(endTime)) {
-        // TODO: Alert that end time is invalid
-        console.log("Couldn't validate end time");
-        return false;
-    }
-
     var data = {};
-    data["name"] = name;
-    data["start_date"] = startDate;
-    data["end_date"] = endDate;
-    data["start_time"] = time12hTo24h(startTime);
-    data["end_time"] = time12hTo24h(endTime);
-    data["meeting_duration"] = meetingDuration;
-    data["default_open"] = defaultOpen;
+    data["id"] = schedule_id;
+    data["secret_code"] = secret_code;
 
-    var js = JSON.stringify(data);
+    let js = JSON.stringify(data);
     console.log("JS:" + js);
 
     var xhr = new XMLHttpRequest();
-    xhr.open("PUT", api_schedule_url, true);
+    xhr.open("DELETE", api_schedule_url, true);
 
     // Send the collected data as JSON
     xhr.send(js);
@@ -78,9 +46,9 @@ function handleDeleteClick(e) {
         console.log(xhr.request);
         if (xhr.readyState === XMLHttpRequest.DONE) {
             console.log("XHR: " + xhr.responseText);
-            processCreateResponse(xhr.responseText);
+            processDeleteResponse(xhr.responseText, schedule_id);
         } else {
-            processCreateResponse("N/A");
+            processDeleteResponse("N/A");
         }
     };
 

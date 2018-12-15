@@ -156,7 +156,7 @@ function generateTable(schedule, timeSlots, num_weeks, time_slots_per_day) {
     let start_date = getProperDate(schedule.start_date);
 
     if(current_start_date !== "1970-01-01") {
-        start_date = new Date(new Date(current_start_date).getTime() + (2 * 24 * 60 * 60 * 1000));
+        start_date = new Date(new Date(current_start_date).getTime() + (0 * 24 * 60 * 60 * 1000));
     }
 
     for (let j = 0, jDate = start_date; j < day_count; j++, jDate.setTime(jDate.getTime() + (24 * 60 * 60 * 1000))) {
@@ -166,7 +166,7 @@ function generateTable(schedule, timeSlots, num_weeks, time_slots_per_day) {
             table_innerHTML += constructDayHeaderDiv(jDate);
 
             for (let k = 0; k < time_slots_per_day; k++) {
-                console.log("Generating time slot: "  + (j * time_slots_per_day + k) + " on: " + jDate);
+                // console.log("Generating time slot: "  + (j * time_slots_per_day + k) + " on: " + jDate);
                 table_innerHTML += constructTimeSlotDiv(timeSlots[j * time_slots_per_day + k], k);
             }
         }
@@ -181,8 +181,7 @@ function generateTable(schedule, timeSlots, num_weeks, time_slots_per_day) {
     populateTimeSlots(timeSlots);
     populateDays();
     populateTimes();
-
-    populateWeekSwitcher(num_weeks, schedule.start_date);
+    populateExtendForm(schedule.start_date, schedule.end_date);
 
     $('#secret_code').on('input', function () {
         secret_code = $(this).val(); // Get the current value of the input field.
@@ -193,7 +192,7 @@ function generateTable(schedule, timeSlots, num_weeks, time_slots_per_day) {
     });
 }
 
-function regenerateSchedule() {
+function regenerateSchedule(shouldPopulateSwitcher) {
     // var data = {};
     // data["id"] = hash;
     // data["week_start_date"] = "1970-01-01";
@@ -201,10 +200,12 @@ function regenerateSchedule() {
     // var js = JSON.stringify(data);
     // console.log("JS:" + js);
 
-    console.log("Getting week with start date: " + current_start_date);
+    // console.log("Getting week with start date: " + current_start_date);
     $.get(api_schedule_url, {id: hash, week_start_date: current_start_date}).done(function (data) {
         console.log(data);
         generateTable(data.schedule, data.time_slots, data.num_weeks, data.time_slots_per_day);
+        if(shouldPopulateSwitcher)
+            populateWeekSwitcher(data.num_weeks, data.schedule.start_date);
         ensureCorrectEditView();
     });
 }
@@ -213,7 +214,7 @@ function loadPage() {
     hash = window.location.hash.substring(1); // Puts hash in variable, and removes the # character
     secret_code = new URLSearchParams(window.location.search).get("secret_code");
 
-    regenerateSchedule();
+    regenerateSchedule(true);
 }
 
 function setWeek(date) {
@@ -221,5 +222,5 @@ function setWeek(date) {
     if(date === 1)
         current_start_date = "1970-01-01";
     current_start_date = date;
-    regenerateSchedule();
+    regenerateSchedule(false);
 }

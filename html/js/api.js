@@ -4,9 +4,9 @@
 // }, false);
 
 // All access driven through base_url
-var base_url = "https://jmb0yovy9c.execute-api.us-east-1.amazonaws.com/Beta/";
+var base_url = "https://jmb0yovy9c.execute-api.us-east-1.amazonaws.com/Release/";
 
-var api_schedule_url = base_url + "schedule"; // GET, PUT, DELETE, TODO: POST
+var api_schedule_url = base_url + "schedule"; // GET, PUT, POST, DELETE
 var api_timeslot_url = base_url + "timeslot"; // POST, TODO: GET
 var api_meeting_url = base_url + "meeting"; // PUT, DELETE
 var api_admin_url = base_url + "admin"; // GET, DELETE

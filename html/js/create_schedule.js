@@ -3,8 +3,6 @@ console.log("Loaded schedule creation plugin");
 var js;
 
 function processCreateResponse(result) {
-    // Can grab any DIV or SPAN HTML element and can then manipulate its
-    // contents dynamically via javascript
     console.log("Create response result: " + result);
     js = JSON.parse(result);
 
